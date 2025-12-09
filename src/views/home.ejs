@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+  }
+  .modal {
+    background: #ffffff;
+    min-height: 60vh;
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+  .form-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  
+  .form-header h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+    color: #181818;
+  }
+  
+  .form-header hr {
+    border: none;
+    border-top: 1px solid #d8dde6;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .required-note {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 4px;
+    padding-right: 2px;
+  }
+  .section {
+    margin-bottom: 1.2rem;
+  }
+  label {
+    display: block;
+    font-weight: 400px;
+    margin-bottom: 6px;
+    color: #333;
+  }
+  
+  label::before , .required-note::before {
+    content: "* ";
+    color: #df2e2e;
+  }
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    border-color: #0176d3;
+    box-shadow: 0 0 0 1px #0176d3;
+    outline: none;
+  }
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .cancel {
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    color: #444;
+    padding: 8px 16px;
+    font-weight: 500;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .cancel:hover {
+    background-color: #e0e0e0;
+  }
+  .primary {
+    background-color: #0176D3;
+    border: 1px solid #0176D3;
+    color: white;
+    padding: 8px 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .primary:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+  }
+
+  .signup-link {
+      align-self: center;
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #333;
+      text-align: center;
+  }
+  a{
+    text-decoration: none;
+    color: #0176D3;
+  }
+  
+  @media (max-width: 576px) {
+    .modal {
+      margin: 30px 20px;
+      padding: 20px;
+    }
+  
+    .buttons {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .buttons button {
+      width: 100%;
+    }
+  }
+  
+  </style>
+</head>
+<body>
+  <div class="modal">
+    <div class="form-header">
+        <h2>Sign In</h2>
+        <p class="signup-link">or <a href="/signup">create an account</a></p>
+
+        <hr />
+        <p class="required-note">= Required Information</p>
+      </div>
+    <form method="POST" action="/login">
+      <div class="section">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div class="section">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <div class="buttons">
+        <button type="button" class="cancel">Cancel</button>
+        <button type="submit" class="primary">Login</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
