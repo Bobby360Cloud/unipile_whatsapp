@@ -7,5 +7,5 @@ export default {
   unipile_dsn: process.env.UNIPILE_DSN ,
   unipile_api_key: process.env.UNIPILE_API_KEY ,
   mongodb_url: process.env.MONGODB_URI,
-  
+  PHP_SERVER_URL:process.env.PHP_SERVER_URL,
 };

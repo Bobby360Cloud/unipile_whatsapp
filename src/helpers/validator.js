@@ -49,3 +49,39 @@ export const generateTimeStamp = () => {
 }
 
 
+
+export const addUserRecord = async (data) => {
+  const sessionModel = new userModel(data);
+  await sessionModel.save();
+
+}
+
+
+
+export function encryptString(clearText) {
+  const encryption = process.env.ENCRYPTION_KEY;
+
+  const [ivStr, keyStr] = encryption.split(":");
+
+  const iv = Buffer.from(ivStr, "utf8").slice(0,16);
+  const key = Buffer.from(keyStr, "utf8").slice(0,16);
+  const cipher = crypto.createCipheriv("aes-128-cbc", key, iv);
+  let encrypted = cipher.update(clearText, "utf8", "base64");
+  encrypted += cipher.final("base64");
+
+  return encrypted;
+}
+
+
+export function getOrgString (orgid){
+
+    try {
+        if(!orgid || orgid?.length !== 18){
+           throw new Error ("18 digit orgid is required");
+        }
+        return JSON.stringify({orgid : orgid , expiry : Date.now()});
+    } catch (error) {
+        
+    }
+}
+

@@ -19,6 +19,10 @@ const checkNumberSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  chat_id: {
+    type: String,
+    required: true,
+  }
 }, { 
   timestamps: true,  
   unique: [

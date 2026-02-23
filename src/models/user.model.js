@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
 const userSchema=mongoose.Schema({
-    phone_id:{type:String,unique:true},
+    account_id:{type:String,unique:true},
+    number:{type:String},
     sessionId:{type:String,unique:true},
     orgId:{type:String},
     userId:{type:String},
@@ -12,7 +13,6 @@ const userSchema=mongoose.Schema({
     timestamps:{type:String},
     isGroupSupported:{type:Boolean, default: false},
     custom_namespace: String,
-    mode:{type:String, enum:['Trial','live', 'closed'], default:'Trial'},
 
 },{timestamps: { createdAt: 'createdat', updatedAt: 'updatedat' }})
 

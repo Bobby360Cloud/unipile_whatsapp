@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get('/qr', getQr);
 
-router.post('/account/webhook', webhook); 
+router.post('/webhook', webhook); 
 
 export default router;
