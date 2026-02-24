@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 const userSchema=mongoose.Schema({
-    account_id:{type:String,unique:true},
-    number:{type:String},
+    account_id:{type:String, default : null  },
+    number:{type:String, default : null},
     sessionId:{type:String,unique:true},
     orgId:{type:String},
     userId:{type:String},

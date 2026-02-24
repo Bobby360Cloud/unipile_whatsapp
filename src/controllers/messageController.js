@@ -11,10 +11,10 @@ export async function webhook(req, res) {
     res.status(200).send('Webhook received');
   }
 
-
+  const client = new UnipileClient(`https://${config.UNIPILE_DSN}`, `${config.UNIPILE_API_KEY}`);
   export async function sendMsgToWhatsapp (req, res) {
     try {
-      const client = new UnipileClient(`https://${config.unipile_dsn}`, `${config.unipile_api_key}`);
+
       const response = await client.messaging.sendMessage({
         chat_id: "0q9seaUUXKWT0oQWrY__zg",
         text: "kya krre ho"

@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import indexRouter from './routes/index.js';
 import authRouter from './routes/authRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
+import dbConnect from './configs/dbconfig.js';
 
 var app = express();
 
@@ -17,7 +18,7 @@ app.use('/styles', express.static(path.join(__dirname, 'public/stylesheets')));
 app.set('views', path.join(__dirname, './views'));
 app.set('view engine', 'ejs');
 
-
+dbConnect();
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -1,9 +1,10 @@
 import config from "../configs/config.js";
-const {PHP_SERVER_URL} = config;
+const {PHP_SERVER_URL , UNIPILE_API_KEY , UNIPILE_DSN} = config;
 export default {
   baseAPI: "",
   routes_Url: {
-    
+    getAccountDetail : (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
+    getQr : `${UNIPILE_DSN}/api/v1/accounts`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>
@@ -26,6 +27,11 @@ export default {
     logout: "logout",
   },
 };
+
+export const unipileHeaders = {
+  "content-type": "application/json" ,
+  "X-API-KEY": UNIPILE_API_KEY
+}
 
 
 

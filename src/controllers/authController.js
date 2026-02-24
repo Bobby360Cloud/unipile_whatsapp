@@ -1,89 +1,172 @@
 import { UnipileClient } from 'unipile-node-sdk';
 import config from '../configs/config';
-import { apiCall, makeRequest } from '../modules/api.module';
+import {makeRequest } from "../helpers/request"
 import QRCode from 'qrcode';
 import { getSessionFromValidOrgUser } from '../helpers/validator';
+import userModel from '../models/user.model';
+import constants , {unipileHeaders} from '../helpers/constants';
 
 export async function getQr(req, res) {
 
   try {
-    // const {sessionId,userExist,orgId,userId,namespace , userSession , loggedIn}=req.validData;
-    // console.log("sessionId..........................", sessionId);
-    // console.log("user")
-    // if(userSession || loggedIn) {
-    //   res.render("authenticated", {status : 200, message: "You are authenticated."});
-    // }
+    const {sessionId,userExist,orgId,userId,namespace , loggedIn}=req.validData;
+    console.log("sessionId..........................", sessionId);
+    console.log("user")
+    if(loggedIn) {
+      return res.render("authenticated", {status : 200, message: "You are authenticated."});
+    }
     
+  
+//   const client = new UnipileClient(`https://${config.UNIPILE_DSN}`, `${config.UNIPILE_API_KEY}`);
 
-  const client = new UnipileClient(`https://${config.unipile_dsn}`, `${config.unipile_api_key}`);
+//   // Step 1 — start WhatsApp connect
+//   const whatsappConnect = await client.account.connectWhatsapp();
+// console.log("whatsappConnect= account id============", whatsappConnect?.account_id);
+// const qrCodeText = whatsappConnect?.code;
+const url = constants.routes_Url.getQr 
+const reqData = {
+  method : 'post',
+  url : url ,
+  headers : unipileHeaders,
+  data : {
+     "provider": "WHATSAPP"
+  }
+}
+const qrRes = await makeRequest(reqData) ;
+console.log("accountDetails =============", qrRes?.data);
+const qrCodeText = qrRes?.data?.checkpoint?.qrcode ;
 
-  // Step 1 — start WhatsApp connect
-  const whatsappConnect = await client.account.connectWhatsapp();
-
-  const qrCodeText = whatsappConnect?.code;
   if(!qrCodeText){
-    res.render("error", {
+    return res.render("error", {
       message: "couldn't generate qr",
       error: "error",
     });
   }
   // Step 2 — convert QR text → PNG Base64
   const qr = await QRCode.toDataURL(qrCodeText);
-  console.log("Generated QR Code:", qr);
+  if(qr && qrRes?.data?.account_id){
+    await userModel.findOneAndUpdate(
+      { sessionId: sessionId },
+      {
+        $set: {
+          orgId: orgId,
+          userId: userId,
+          account_id : qrRes.data.account_id
+        }
+      },
+      { upsert: true, new: true }
+    );
+      console.log("Generated QR Code:");
   // Step 3 — render in EJS
-  res.render("scan", { src: qr });
+  return res.render("scan", { src: qr });
+  }else {
+    return res.render("authenticated", {status : 200, message: "Could not generate qr at the moment. Try again after some time."});
+  }
+
+ 
 
   }
 catch (error) {
   console.log("error on displaying the qr", error);
-  res.render("error", { message: error?.message, error: error });
+  return res.render("error", { message: error?.message, error: error });
 }
 }
+
+
+export const validateQRRequest = async (req, res, next) => {
+  const orgId = req && req.query && req.query.orgid;
+  const userId = req && req.query && req.query.userid;
+  const namespace = req?.query?.namespace || 'tdc_tsw';
+  const { isValidOrgUser, sessionId, userExist, loggedIn } =
+    await getSessionFromValidOrgUser(orgId, userId);
+  if (!isValidOrgUser) {
+    res.render("authenticated",{ "status": 400, "message": "Please provide a valid Organisation Id or User Id" });
+    return
+  }
+
+  req.validData = { isValidOrgUser, sessionId, userExist,loggedIn, orgId, userId , namespace};
+  next();
+};
+
+export const validateRequest = async (req, res, next) => {
+  const orgId = req?.body?.orgid || req?.query?.orgid;
+  const userId = req?.body?.userid || req?.query?.userid;
+  const { isValidOrgUser, sessionId, userExits, loggedIn } =
+    await getSessionFromValidOrgUser(orgId, userId);
+  if (!isValidOrgUser) {
+    res.json({
+      status: 400,
+      message: "Please provide a valid Organisation Id or User Id",
+    });
+    return;
+  }
+  if (!loggedIn) return res.json({ status: 400, message: "Inative Session" });
+  req.body.sessionId = sessionId;
+  // req.body.userExits = userExits;
+  // req.body.orgId = orgId;
+  // req.body.userId = userId;
+  next();
+};
 
 
 export async function webhook(req, res) {
-  console.log("Webhook received:", req.body);
+  console.log(" Account Webhook received:", req.body);
   if (req.body && req.body?.AccountStatus && req?.body?.AccountStatus?.account_type === 'WHATSAPP') {
     const { AccountStatus } = req.body;
-    console.log(`Account ${AccountStatus?.AccountId} status changed to: ${AccountStatus?.message}`);
+    console.log(`Account ${AccountStatus?.account_id} status changed to: ${AccountStatus?.message}`);
     // Handle different account statuses as needed
     if(AccountStatus?.message === 'CONNECTING') {
       // Perform actions for connecting status
+      // setup loader functionality
     }
-    else if(AccountStatus?.message === 'OK') {
+    else if(AccountStatus?.message === 'OK' && AccountStatus?.account_id) {
+
       // Perform actions for connected status
+      const url = constants.routes_Url.getAccountDetail(AccountStatus?.account_id);
+      const reqData = {
+        method : 'get',
+        url : url ,
+        headers : unipileHeaders
+      }
+      const accountDeatils = await makeRequest(reqData) ;
+      console.log("accountDetails =============", accountDeatils?.data);
+      if(accountDeatils?.data?.name){
+        const userDetails = await userModel.findOneAndUpdate({account_id : AccountStatus?.account_id } , {
+          $set :{
+            number : accountDeatils?.data?.name
+          }
+        }, {new : true})
+        console.log("userDetails on login ========", userDetails);
+      }
+
+            //get number details from api call to provider
+      //update user db
     }else if(AccountStatus?.message === 'SYNC_SUCCESS') {
       // Perform actions for disconnected status
-    }else if(AccountStatus?.message === 'CREDENTIALS' && AccountStatus?.reason ==='Disconnected') {
+      // if want to show syncing on 
+
+    }else if(AccountStatus?.message === 'CREDENTIALS' && req.body?.reason ==='Disconnected' && AccountStatus?.account_id) {
       // Perform actions for disconnected status
+    const userDetail =  await userModel.findOneAndUpdate({account_id : AccountStatus?.account_id } , {
+        $set :{
+          number : null ,
+          account_id : null
+        }
+      }, {new : true})
+
+      console.log("user Details on logout =========================", userDetail);
+      //update user db 
+      //delete account from provider end
+      const url = constants.routes_Url.getAccountDetail(AccountStatus?.account_id);
+      const reqData = {
+        method : 'delete',
+        url : url ,
+        headers : unipileHeaders
+      }
+      const accountDeatils = await makeRequest(reqData) ;
+      console.log("accountDetails delete =============", accountDeatils?.data);
+
     }
 }
   res.status(200).send('Webhook received');
 }
-
-
-
-
-
-// try {
-//   const {sessionId,userExist,orgId,userId,namespace , userSession , loggedIn}=req.validData;
-//   console.log("sessionId..........................", sessionId);
-//   console.log("user")
-//   if(userSession || loggedIn) {
-//     res.render("authenticated", {status : 200, message: "You are authenticated."});
-//   }
-//   else if(userExist && userExist.phone_id){
-//     const qr= await getQRCode(userExist.phone_id);
-//     await  updateCacheObject(userExist.phone_id,{sessionId,namespace,status:false});
-//     return res.render("scan", { src: qr });
-//   } else {
-//     res.render("error", {
-//       message: "couldn't generate qr",
-//       error: "error",
-//     });
-//   }
-// }
-// catch (error) {
-// console.log("error on displaying the qr", error);
-// res.render("error", { message: error?.message, error: error });
-// }

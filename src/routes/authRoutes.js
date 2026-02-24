@@ -1,9 +1,9 @@
 import express from 'express';
-import { getQr , webhook} from '../controllers/authController.js';
+import { getQr , validateQRRequest, webhook} from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.get('/qr', getQr);
+router.get('/qr',validateQRRequest, getQr);
 
 router.post('/webhook', webhook); 
 
