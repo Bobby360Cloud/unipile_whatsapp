@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { getSessionFromValidOrgUser } from '../helpers/validator';
 import userModel from '../models/user.model';
 import constants , {unipileHeaders} from '../helpers/constants';
+import checkNumbersModel from '../models/checkNumbers.model';
 
 export async function getQr(req, res) {
 
@@ -51,6 +52,7 @@ const qrCodeText = qrRes?.data?.checkpoint?.qrcode ;
         $set: {
           orgId: orgId,
           userId: userId,
+          custom_namespace  : namespace,
           account_id : qrRes.data.account_id
         }
       },
@@ -155,7 +157,12 @@ export async function webhook(req, res) {
       }, {new : true})
 
       console.log("user Details on logout =========================", userDetail);
+      if( userDetail?.orgId && userDetail?.userId){
+      await checkNumbersModel.deleteMany({orgId : userDetail.orgId , userId : userDetail.userId});
+      }
+      
       //update user db 
+      //delete numbers for logout session
       //delete account from provider end
       const url = constants.routes_Url.getAccountDetail(AccountStatus?.account_id);
       const reqData = {

@@ -5,7 +5,7 @@ import userModel from "../models/user.model.js";
 import checkNumbersModel from "../models/checkNumbers.model.js";
 import makeRequest, { getRequest, postRequest ,patchRequest, formDataRequest } from "./request.js";
 // import { sendMsgToWhatsapp } from "../../controllers/messageController.js";
-import { bulkUpdateNumbersWithFalse, bulkUpdateNumbersWithTrue } from "./dbhelper.js";
+import { bulkUpdateNumbersWithFalse, bulkUpdateNumbersWithTrue, numberUpdateWithFalse, numberUpdateWithTrue } from "./dbhelper.js";
 import { Readable } from 'stream';
 import FormData from 'form-data';
 
@@ -512,7 +512,6 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
 
     let num = message?.type === 'Incoming' ? message.fromNumber : message.toNumber;
     const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18),message.sessionId.slice(18), num);
-
     let availableNumbers;
     if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
       availableNumbers = await CheckAvailableNumbers(
@@ -523,9 +522,9 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         message.type
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await bulkUpdateNumbersWithTrue(message.sessionId.slice(0, 18),message.sessionId.slice(18), availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo,message.sessionId , [message.chatId]);
+        await numberUpdateWithTrue(message.sessionId.slice(0, 18),message.sessionId.slice(18), num, message.chatId)
       }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await bulkUpdateNumbersWithFalse(message.sessionId.slice(0, 18),message.sessionId.slice(18),[num],[message.chatId] );
+        await numberUpdateWithFalse(message.sessionId.slice(0, 18),message.sessionId.slice(18), num, message.chatId );
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
@@ -578,10 +577,6 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
           tdc_tsw__Message_Time__c: timestamp,
           attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }
         };
-        if(message.latitude && message.longitude) {
-          messageObj["tdc_tsw__Location__Latitude__s"] = message.latitude;
-          messageObj["tdc_tsw__Location__Longitude__s"] = message.longitude;
-        }
         if(message.contextMessageId)
           messageObj["tdc_tsw__ContextId__c"] = message.contextMessageId;
 
@@ -591,8 +586,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         console.log("messageObj....................", messageObj);
         let sf_URlForMessage = `${instanceUrl}/services/data/v58.0/sobjects/tdc_tsw__Message__c`;
         //await postRequest(SF_Headers, sf_URlForMessage, messageObj);
-        await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
-
+        const res =await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
         }
       }
     }catch (error) {

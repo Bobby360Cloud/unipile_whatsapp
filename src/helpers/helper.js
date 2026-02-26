@@ -105,7 +105,7 @@ export const getMessageTime = (time) => {
   };
   
   export const getNumAvailability = async (orgId, userId, number) => {
-    console.log("inside get Number Availibilty ===============", getNumAvailability);
+    console.log("inside get Number Availibilty ===============", orgId, userId, number);
     const record = await checkNumbersModel.findOne({ orgId, userId, number });
     if (!record) {
       // If the record does not exist in the database

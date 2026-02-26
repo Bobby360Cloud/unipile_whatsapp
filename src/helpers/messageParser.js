@@ -2,6 +2,7 @@ import userModel from "../models/user.model";
 import constants ,{ createMessageObj, unipileHeaders }   from "./constants";
 import makeRequest from "./request";
 import { sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
+import { fileTypeFromBuffer } from "file-type";
 
 
 export const oneToOneMessageParser = async (message) =>
@@ -62,7 +63,9 @@ export const oneToOneMessageParser = async (message) =>
                 console.log("response for attachment =================", response?.data);
                 // const buffer = await getFileBuffer(message?.url);
                 const base64String = response?.data?.toString("base64");
-                messageObj.setMediaMessage(base64String , attachments?.[0]?.attachment_type);
+                const fileType = await fileTypeFromBuffer(response?.data);
+                const mimetype = fileType?.mime || attachments?.[0]?.attachment_type ;
+                messageObj.setMediaMessage(base64String , mimetype);
               } else {
                 messageObj.setTextMessage(message?.message_id, text ,message?.timestamp);
               }

@@ -75,11 +75,11 @@ export const bulkUpdateNumbersWithFalse = async (orgId,userId, NumList) => {
     }
     };
 
-    export const numberUpdateWithTrue = async (orgId,userId, number) => {
+    export const numberUpdateWithTrue = async (orgId,userId, number, chatId) => {
         try {
-          console.log("numberUpdateWithTrue called with orgId:", orgId,number);
+          console.log("numberUpdateWithTrue called with orgId:", orgId,userId, number, chatId);
           let rec=await checkNumbersModel.findOneAndUpdate(
-            { orgId: orgId,userId: userId, number: number },
+            { orgId: orgId,userId: userId, number: number,chat_id : chatId },
             { $set: { isAvailable: true } },
             { upsert: true, new: true }
           );
@@ -87,6 +87,21 @@ export const bulkUpdateNumbersWithFalse = async (orgId,userId, NumList) => {
 
         }catch (error) {
             console.error(`Error updating number with true for orgId: ${orgId}`, error.message);
+        }
+      };
+
+      export const numberUpdateWithFalse = async (orgId,userId, number , chatId) => {
+        try {
+          console.log("numberUpdateWithFalse called with orgId:", orgId,userId, number, chatId);
+          let rec=await checkNumbersModel.findOneAndUpdate(
+            { orgId: orgId,userId: userId, number: number , chat_id : chatId  },
+            { $set: { isAvailable: false } },
+            { upsert: true, new: true }
+          );
+          console.log("numberUpdateWithFalse updated record:", rec);
+
+        }catch (error) {
+            console.error(`Error updating number with false for orgId: ${orgId}`, error.message);
         }
       };
       
