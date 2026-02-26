@@ -18,12 +18,6 @@ export async function getQr(req, res) {
     }
     
   
-//   const client = new UnipileClient(`https://${config.UNIPILE_DSN}`, `${config.UNIPILE_API_KEY}`);
-
-//   // Step 1 — start WhatsApp connect
-//   const whatsappConnect = await client.account.connectWhatsapp();
-// console.log("whatsappConnect= account id============", whatsappConnect?.account_id);
-// const qrCodeText = whatsappConnect?.code;
 const url = constants.routes_Url.getQr 
 const reqData = {
   method : 'post',
@@ -157,8 +151,8 @@ export async function webhook(req, res) {
       }, {new : true})
 
       console.log("user Details on logout =========================", userDetail);
-      if( userDetail?.orgId && userDetail?.userId){
-      await checkNumbersModel.deleteMany({orgId : userDetail.orgId , userId : userDetail.userId});
+      if( userDetail?.sessionId){
+      await checkNumbersModel.deleteMany({sessionId  : userDetail.sessionId});
       }
       
       //update user db 

@@ -96,17 +96,17 @@ export const getMessageTime = (time) => {
   
   // }
   
-  export const isGroupSupported = async (orgid, userid) => {
-    const record = await userModel.findOne({ orgId: orgid, userId: userid });
+  export const isGroupSupported = async (sessionId) => {
+    const record = await userModel.findOne({ sessionId : sessionId });
     if (!record) {
       return false;
     }
     return record.isGroupSupported ?? false;
   };
   
-  export const getNumAvailability = async (orgId, userId, number) => {
-    console.log("inside get Number Availibilty ===============", orgId, userId, number);
-    const record = await checkNumbersModel.findOne({ orgId, userId, number });
+  export const getNumAvailability = async (sessionId, number) => {
+    console.log("inside get Number Availibilty ===============", sessionId, number);
+    const record = await checkNumbersModel.findOne({ sessionId : sessionId , number });
     if (!record) {
       // If the record does not exist in the database
       return "NOT_EXIST";
@@ -116,8 +116,8 @@ export const getMessageTime = (time) => {
     return record.isAvailable ?? null;
   };
   
-  export const getGroupAvailability = async (orgId, number) => {
-    const record = await checkNumbersModel.findOne({ orgId, number });
+  export const getGroupAvailability = async (sessionId, number) => {
+    const record = await checkNumbersModel.findOne({ sessionId , number });
     if (!record) {
       // If the record does not exist in the database
       return "NOT_EXIST";

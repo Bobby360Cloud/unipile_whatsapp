@@ -511,7 +511,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
     }
 
     let num = message?.type === 'Incoming' ? message.fromNumber : message.toNumber;
-    const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18),message.sessionId.slice(18), num);
+    const isNumExist = await getNumAvailability(message.sessionId, num);
     let availableNumbers;
     if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
       availableNumbers = await CheckAvailableNumbers(
@@ -522,9 +522,9 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         message.type
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await numberUpdateWithTrue(message.sessionId.slice(0, 18),message.sessionId.slice(18), num, message.chatId)
+        await numberUpdateWithTrue(message.sessionId, num, message.chatId)
       }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await numberUpdateWithFalse(message.sessionId.slice(0, 18),message.sessionId.slice(18), num, message.chatId );
+        await numberUpdateWithFalse(message.sessionId, num, message.chatId );
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
@@ -586,7 +586,8 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         console.log("messageObj....................", messageObj);
         let sf_URlForMessage = `${instanceUrl}/services/data/v58.0/sobjects/tdc_tsw__Message__c`;
         //await postRequest(SF_Headers, sf_URlForMessage, messageObj);
-        const res =await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
+        await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
+
         }
       }
     }catch (error) {

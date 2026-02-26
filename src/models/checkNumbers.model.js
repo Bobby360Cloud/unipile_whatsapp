@@ -1,12 +1,7 @@
 import mongoose from 'mongoose';
 
 const checkNumberSchema = new mongoose.Schema({
-  orgId: {
-    type: String,
-    required: true,
-    index: true
-  },
-  userId : {
+  sessionId : {
     type: String,
     required: true,
     index: true
