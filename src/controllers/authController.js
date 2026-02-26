@@ -16,13 +16,6 @@ export async function getQr(req, res) {
       return res.render("authenticated", {status : 200, message: "You are authenticated."});
     }
     
-  
-//   const client = new UnipileClient(`https://${config.UNIPILE_DSN}`, `${config.UNIPILE_API_KEY}`);
-
-//   // Step 1 — start WhatsApp connect
-//   const whatsappConnect = await client.account.connectWhatsapp();
-// console.log("whatsappConnect= account id============", whatsappConnect?.account_id);
-// const qrCodeText = whatsappConnect?.code;
 const url = constants.routes_Url.getQr 
 const reqData = {
   method : 'post',
