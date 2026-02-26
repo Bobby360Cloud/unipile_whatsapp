@@ -534,7 +534,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
         userId: responseFromGetConnentToSf?.userId
       };
-    }
+    }  
 
     console.log("availableNumbers -------------", availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
 
@@ -687,9 +687,9 @@ export const sendEditedIncomingToSF = async(message) =>{
         message.type
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await bulkUpdateNumbersWithTrue(message.sessionId.slice(0, 18), availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo,message.sessionId);
+        await numberUpdateWithTrue(message.sessionId, availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
       }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await bulkUpdateNumbersWithFalse(message.sessionId.slice(0, 18),[num], message.sessionId);
+        await numberUpdateWithFalse(message.sessionId,[num]);
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
