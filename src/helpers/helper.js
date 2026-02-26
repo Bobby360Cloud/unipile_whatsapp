@@ -1,5 +1,6 @@
 import userModel from "../models/user.model";
 import checkNumbersModel from "../models/checkNumbers.model";
+import { updateSFUserLogTime } from "./sfhelper";
 
 export const getMessageTime = (time) => {
     console.log("time.................",time);
@@ -68,33 +69,6 @@ export const getMessageTime = (time) => {
     const data = { UserId: userid, ...sfLog };
     await updateSFUserLogTime(sessionId, data);
   };
-  
-  export const manageUserSession = async (phone_id, isLogin) => {
-    try {
-      const phoneDetails = await cacheGet(phone_id);
-      console.log(
-        phone_id,
-        "phone details...........................",
-        phoneDetails
-      );
-      const sessionId = phoneDetails?.sessionId;
-      if (isLogin) {
-        await saveUserLogTime(sessionId, true);
-      } else {
-        await saveUserLogTime(sessionId, false);
-        await cacheDelete(phone_id);
-      }
-    } catch (err) {
-      console.log("error in manageUserSession...", err.message);
-    }
-  };
-  // export const getMessageId=(messageId)=>{
-  //   const parts = messageId.split("_");
-  //   const fromMe = parts[0];
-  //   const toNumber = parts[1].replace("@c.us", "");
-  //   const messageId = parts[2];
-  
-  // }
   
   export const isGroupSupported = async (sessionId) => {
     const record = await userModel.findOne({ sessionId : sessionId });

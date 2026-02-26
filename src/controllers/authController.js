@@ -6,6 +6,7 @@ import { getSessionFromValidOrgUser } from '../helpers/validator';
 import userModel from '../models/user.model';
 import constants , {unipileHeaders} from '../helpers/constants';
 import checkNumbersModel from '../models/checkNumbers.model';
+import { saveUserLogTime } from '../helpers/helper';
 
 export async function getQr(req, res) {
 
@@ -133,6 +134,7 @@ export async function webhook(req, res) {
           }
         }, {new : true})
         console.log("userDetails on login ========", userDetails);
+        await saveUserLogTime (userDetails.sessionId ,true );
       }
 
             //get number details from api call to provider
@@ -153,6 +155,8 @@ export async function webhook(req, res) {
       console.log("user Details on logout =========================", userDetail);
       if( userDetail?.sessionId){
       await checkNumbersModel.deleteMany({sessionId  : userDetail.sessionId});
+
+      await saveUserLogTime (userDetail.sessionId ,false );
       }
       
       //update user db 
