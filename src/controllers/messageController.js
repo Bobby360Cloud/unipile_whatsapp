@@ -1,12 +1,18 @@
 import { UnipileClient } from 'unipile-node-sdk';
 import config from '../configs/config';
-export async function webhook(req, res) {
-    console.log("Webhook received: for messages ");
-    console.log("Full request body: ", JSON.stringify(req.body, null, 2));
-    if (req.body  && req?.body?.account_type === 'WHATSAPP') {
+import { oneToOneMessageParser } from '../helpers/messageParser';
+export async function msgWebhook(req, res) {
+    const message = req?.body ;
+    if (message && message.account_type === 'WHATSAPP' && message.is_group === false) {
 
-      // Handle different account statuses as needed
-      
+      console.log("Webhook received: for one to one messages ");
+      console.log("Full request body: ", JSON.stringify(req.body, null, 2));
+        
+
+        const messageParsed = await oneToOneMessageParser(message);
+      // Handle different messages as needed
+      //handle one to one  //parsing
+     
   }
     res.status(200).send('Webhook received');
   }

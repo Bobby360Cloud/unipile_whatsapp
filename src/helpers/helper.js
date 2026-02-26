@@ -104,8 +104,9 @@ export const getMessageTime = (time) => {
     return record.isGroupSupported ?? false;
   };
   
-  export const getNumAvailability = async (orgId, number) => {
-    const record = await checkNumbersModel.findOne({ orgId, number });
+  export const getNumAvailability = async (orgId, userId, number) => {
+    console.log("inside get Number Availibilty ===============", getNumAvailability);
+    const record = await checkNumbersModel.findOne({ orgId, userId, number });
     if (!record) {
       // If the record does not exist in the database
       return "NOT_EXIST";

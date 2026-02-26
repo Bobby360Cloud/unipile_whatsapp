@@ -5,6 +5,7 @@ export default {
   routes_Url: {
     getAccountDetail : (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
     getQr : `${UNIPILE_DSN}/api/v1/accounts`,
+    getAttachmentUrl : (messageId , attachmentId) =>`${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>
@@ -91,11 +92,13 @@ export class createMessageObj {
     this.type = "";
     this.contextMessageId="";
   }
-  setMessgeInfo(fromMe, selfNumberFormated, toNumber, contextMessageId) {
-    this.toNumber = fromMe ? toNumber : selfNumberFormated;
-    this.fromNumber = fromMe ? selfNumberFormated : toNumber;
+  setMessgeInfo(fromMe, fromNumber, toNumber, contextMessageId, accountId, chatId) {
+    this.toNumber = toNumber;
+    this.fromNumber = fromNumber;
     this.type = fromMe ? "Outgoing" : "Incoming";
     this.contextMessageId = contextMessageId;
+    this.accountId = accountId;
+    this.chatId = chatId
   }
   setTextMessage(messageId, message, messageTimestamp, isEdit) {
     this.messageId = messageId;

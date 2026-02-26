@@ -1,14 +1,18 @@
 import axios from 'axios';
+import { unipileHeaders } from './constants';
 
 
 export async function makeRequest(req) {
     try {
-        const { method, url, headers, data } = req;
+        const { method, url, headers, data, responseType} = req;
         const config = {
             method: method || 'get',  
             url: url,
-            headers: headers || {}       
+            headers: headers || {},     
         };
+        if(responseType){
+            config.responseType = responseType
+        }
         if(method=='post' || method=='patch') config['data']=data || {};
         console.log("request body ======" , config);
         let response = await axios(config);

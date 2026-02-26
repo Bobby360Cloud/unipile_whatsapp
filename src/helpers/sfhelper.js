@@ -1,13 +1,14 @@
 import mime from "mime-types";
 import { getMessageTime, getNumAvailability, isGroupSupported } from "./helper.js"
-import consts, { sf_LoginURL , querySF, authAppURL } from "../constants.js";
-import { userModel, errorRecord, checkNumbersModel } from "../../models/index.js";
-import makeRequest, { getRequest, postRequest ,patchRequest, formDataRequest } from "../request.js";
-import { sendMsgToWhatsapp } from "../../controllers/message.controller.js";
+import consts, { sf_LoginURL , querySF, authAppURL } from "./constants.js";
+import userModel from "../models/user.model.js";
+import checkNumbersModel from "../models/checkNumbers.model.js";
+import makeRequest, { getRequest, postRequest ,patchRequest, formDataRequest } from "./request.js";
+// import { sendMsgToWhatsapp } from "../../controllers/messageController.js";
 import { bulkUpdateNumbersWithFalse, bulkUpdateNumbersWithTrue } from "./dbhelper.js";
 import { Readable } from 'stream';
 import FormData from 'form-data';
-import { cacheGet } from "../../configs/redis_config.js";
+
 import { encryptString, getOrgString } from "./validator.js";
 
 const {routes_Url} = consts;
@@ -510,7 +511,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
     }
 
     let num = message?.type === 'Incoming' ? message.fromNumber : message.toNumber;
-    const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18), num);
+    const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18),message.sessionId.slice(18), num);
 
     let availableNumbers;
     if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
@@ -522,9 +523,9 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         message.type
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await bulkUpdateNumbersWithTrue(message.sessionId.slice(0, 18), availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo,message.sessionId);
+        await bulkUpdateNumbersWithTrue(message.sessionId.slice(0, 18),message.sessionId.slice(18), availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo,message.sessionId , [message.chatId]);
       }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await bulkUpdateNumbersWithFalse(message.sessionId.slice(0, 18),[num], message.sessionId);
+        await bulkUpdateNumbersWithFalse(message.sessionId.slice(0, 18),message.sessionId.slice(18),[num],[message.chatId] );
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);

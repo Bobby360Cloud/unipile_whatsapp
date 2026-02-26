@@ -6,6 +6,11 @@ const checkNumberSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  userId : {
+    type: String,
+    required: true,
+    index: true
+  },
   number: {
     type: String,
     required: true,
