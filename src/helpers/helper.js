@@ -1,6 +1,8 @@
 import userModel from "../models/user.model";
 import checkNumbersModel from "../models/checkNumbers.model";
 import { updateSFUserLogTime } from "./sfhelper";
+import constants, { unipileHeaders } from "./constants";
+import makeRequest from "./request";
 
 export const getMessageTime = (time) => {
     console.log("time.................",time);
@@ -99,3 +101,55 @@ export const getMessageTime = (time) => {
     // If the record exists, return the value of sf_groupId (can be null or false)
     return record.sf_groupId ?? null;
   };
+
+
+  export const manageUnipileLogin = async (account_id) => {
+    try {
+      const url = constants.routes_Url.getAccountDetail(account_id);
+      const reqData = {
+        method: 'get',
+        url: url,
+        headers: unipileHeaders
+      }
+      const accountDeatils = await makeRequest(reqData);
+      if (accountDeatils?.data?.name) {
+        const userDetails = await userModel.findOneAndUpdate({ account_id: account_id }, {
+          $set: {
+            number: accountDeatils?.data?.name
+          }
+        }, { new: true })
+        console.log("userDetails on login ========", userDetails);
+        await saveUserLogTime(userDetails.sessionId, true);
+      }
+    } catch (error) {
+      
+    }
+  }
+
+  export const manageUnipileLogout = async (account_id) => {
+    try {
+      const userDetail = await userModel.findOneAndUpdate({ account_id: account_id }, {
+        $set: {
+          number: null,
+          account_id: null
+        }
+      }, { new: true })
+
+      console.log("user Details on logout =========================", userDetail);
+      if (userDetail?.sessionId) {
+        await checkNumbersModel.deleteMany({ sessionId: userDetail.sessionId });
+        await saveUserLogTime(userDetail.sessionId, false);
+      }
+      const url = constants.routes_Url.getAccountDetail(account_id);
+      const reqData = {
+        method: 'delete',
+        url: url,
+        headers: unipileHeaders
+      }
+      await makeRequest(reqData);
+
+
+    } catch (error) {
+      
+    }
+  }
