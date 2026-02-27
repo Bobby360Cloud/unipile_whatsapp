@@ -11,6 +11,9 @@ const checkNumberSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  groupName: {
+    type: String,
+  },
   isAvailable: {
     type: Boolean,
     default: false

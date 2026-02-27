@@ -675,7 +675,7 @@ export const sendEditedIncomingToSF = async(message) =>{
     if(!message?.sfGroupId){
       console.log("one to one edit message");
       let num = message?.type === 'Incoming' ? message.fromNumber : message.toNumber;
-    const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18), num);
+    const isNumExist = await getNumAvailability(message.sessionId , num);
 
     
     if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
@@ -687,9 +687,9 @@ export const sendEditedIncomingToSF = async(message) =>{
         message.type
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await numberUpdateWithTrue(message.sessionId, availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
+        await numberUpdateWithTrue(message.sessionId, num , message.chatId);
       }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await numberUpdateWithFalse(message.sessionId,[num]);
+        await numberUpdateWithFalse(message.sessionId,num, message.chatId);
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);

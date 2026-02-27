@@ -118,14 +118,15 @@ export class createMessageObj {
   setDeliveryStatus(status) {
     this.deliveryStatus = status;
   }
-  setGroupMessageInfo(fromMe,fromNumber,participant,groupId,contextMessageId, sfGroupId, groupName){
+  setGroupMessageInfo(fromMe,fromNumber,participant,groupId,contextMessageId, sfGroupId, groupName, chatId){
       this.fromNumber = fromNumber;
       this.participant = participant;
       this.type = fromMe ? "Outgoing" : "Incoming";
       this.groupId = groupId;
       this.contextMessageId = contextMessageId;
       this.sfGroupId =sfGroupId;
-      this.groupName = groupName;      
+      this.groupName = groupName;   
+      this.chatId = chatId ;  
   }
   setSFGroupId(sfGroupId){
       this.sfGroupId = sfGroupId;
