@@ -1,5 +1,8 @@
 import userModel from "../models/user.model";
 import checkNumbersModel from "../models/checkNumbers.model";
+import { updateSFUserLogTime } from "./sfhelper";
+import constants, { unipileHeaders } from "./constants";
+import makeRequest from "./request";
 
 export const getMessageTime = (time) => {
     console.log("time.................",time);
@@ -69,44 +72,17 @@ export const getMessageTime = (time) => {
     await updateSFUserLogTime(sessionId, data);
   };
   
-  export const manageUserSession = async (phone_id, isLogin) => {
-    try {
-      const phoneDetails = await cacheGet(phone_id);
-      console.log(
-        phone_id,
-        "phone details...........................",
-        phoneDetails
-      );
-      const sessionId = phoneDetails?.sessionId;
-      if (isLogin) {
-        await saveUserLogTime(sessionId, true);
-      } else {
-        await saveUserLogTime(sessionId, false);
-        await cacheDelete(phone_id);
-      }
-    } catch (err) {
-      console.log("error in manageUserSession...", err.message);
-    }
-  };
-  // export const getMessageId=(messageId)=>{
-  //   const parts = messageId.split("_");
-  //   const fromMe = parts[0];
-  //   const toNumber = parts[1].replace("@c.us", "");
-  //   const messageId = parts[2];
-  
-  // }
-  
-  export const isGroupSupported = async (orgid, userid) => {
-    const record = await userModel.findOne({ orgId: orgid, userId: userid });
+  export const isGroupSupported = async (sessionId) => {
+    const record = await userModel.findOne({ sessionId : sessionId });
     if (!record) {
       return false;
     }
     return record.isGroupSupported ?? false;
   };
   
-  export const getNumAvailability = async (orgId, userId, number) => {
-    console.log("inside get Number Availibilty ===============", getNumAvailability);
-    const record = await checkNumbersModel.findOne({ orgId, userId, number });
+  export const getNumAvailability = async (sessionId, number) => {
+    console.log("inside get Number Availibilty ===============", sessionId, number);
+    const record = await checkNumbersModel.findOne({ sessionId : sessionId , number });
     if (!record) {
       // If the record does not exist in the database
       return "NOT_EXIST";
@@ -116,8 +92,8 @@ export const getMessageTime = (time) => {
     return record.isAvailable ?? null;
   };
   
-  export const getGroupAvailability = async (orgId, number) => {
-    const record = await checkNumbersModel.findOne({ orgId, number });
+  export const getGroupAvailability = async (sessionId, number) => {
+    const record = await checkNumbersModel.findOne({ sessionId : sessionId, number });
     if (!record) {
       // If the record does not exist in the database
       return "NOT_EXIST";
@@ -125,3 +101,55 @@ export const getMessageTime = (time) => {
     // If the record exists, return the value of sf_groupId (can be null or false)
     return record.sf_groupId ?? null;
   };
+
+
+  export const manageUnipileLogin = async (account_id) => {
+    try {
+      const url = constants.routes_Url.getAccountDetail(account_id);
+      const reqData = {
+        method: 'get',
+        url: url,
+        headers: unipileHeaders
+      }
+      const accountDeatils = await makeRequest(reqData);
+      if (accountDeatils?.data?.name) {
+        const userDetails = await userModel.findOneAndUpdate({ account_id: account_id }, {
+          $set: {
+            number: accountDeatils?.data?.name
+          }
+        }, { new: true })
+        console.log("userDetails on login ========", userDetails);
+        await saveUserLogTime(userDetails.sessionId, true);
+      }
+    } catch (error) {
+      
+    }
+  }
+
+  export const manageUnipileLogout = async (account_id) => {
+    try {
+      const userDetail = await userModel.findOneAndUpdate({ account_id: account_id }, {
+        $set: {
+          number: null,
+          account_id: null
+        }
+      }, { new: true })
+
+      console.log("user Details on logout =========================", userDetail);
+      if (userDetail?.sessionId) {
+        await checkNumbersModel.deleteMany({ sessionId: userDetail.sessionId });
+        await saveUserLogTime(userDetail.sessionId, false);
+      }
+      const url = constants.routes_Url.getAccountDetail(account_id);
+      const reqData = {
+        method: 'delete',
+        url: url,
+        headers: unipileHeaders
+      }
+      await makeRequest(reqData);
+
+
+    } catch (error) {
+      
+    }
+  }
