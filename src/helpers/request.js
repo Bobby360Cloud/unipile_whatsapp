@@ -14,7 +14,6 @@ export async function makeRequest(req) {
             config.responseType = responseType
         }
         if(method=='post' || method=='patch') config['data']=data || {};
-        console.log("request body ======" , config);
         let response = await axios(config);
         return response;
     } catch (error) {
