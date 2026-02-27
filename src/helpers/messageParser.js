@@ -1,7 +1,7 @@
 import userModel from "../models/user.model";
 import constants ,{ createMessageObj, unipileHeaders }   from "./constants";
 import { updateGroup } from "./dbhelper";
-import { getGroupAvailability, isGroupSupported } from "./helper";
+import { getGroupAvailability, getGroupName, isGroupSupported } from "./helper";
 import makeRequest from "./request";
 import { CheckAvailableNumbers, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
 import { fileTypeFromBuffer } from "file-type";
@@ -139,11 +139,24 @@ export const groupMessageParser = async (message) => {
         
         console.log(phoneNumbers);
         participants = phoneNumbers?.map(
-          number => number.startsWith("+") ? number.slice(1) : a
+          number => number.startsWith("+") ? number.slice(1) : number
         );
         console.log(participants);
       } else if (isGroupAvailable) {
         sfGroupId = isGroupAvailable;
+
+        const GetGroupName = await getGroupName(sessionId , groupId);
+        if(groupName && GetGroupName && groupName !==GetGroupName){
+          const phoneNumbers = message?.attendees?.map(
+            attendee => attendee.attendee_specifics?.phone_number
+          );
+          
+          console.log(phoneNumbers);
+          participants = phoneNumbers?.map(
+            number => number.startsWith("+") ? number.slice(1) : number
+          );
+          console.log(participants);
+        }
       } else {
         return;
       }
@@ -293,11 +306,23 @@ export const editMessageParser = async (message) => {
         
         console.log(phoneNumbers);
         participants = phoneNumbers?.map(
-          number => number.startsWith("+") ? number.slice(1) : a
+          number => number.startsWith("+") ? number.slice(1) : number
         );
         console.log(participants);
       } else if (isGroupAvailable) {
         sfGroupId = isGroupAvailable;
+        const GetGroupName = await getGroupName(sessionId , groupId);
+        if(groupName && GetGroupName && groupName !==GetGroupName){
+          const phoneNumbers = message?.attendees?.map(
+            attendee => attendee.attendee_specifics?.phone_number
+          );
+          
+          console.log(phoneNumbers);
+          participants = phoneNumbers?.map(
+            number => number.startsWith("+") ? number.slice(1) : number
+          );
+          console.log(participants);
+        }
       } else {
         return;
       }

@@ -92,6 +92,16 @@ export const getMessageTime = (time) => {
     return record.isAvailable ?? null;
   };
   
+  export const getGroupName = async (sessionId,groupid) => {
+    const record = await checkNumbersModel.findOne({ sessionId : sessionId, number: groupid});
+    if (!record) {
+      // If the record does not exist in the database
+      return null 
+    }
+    // If the record exists, return the value of sf_groupId (can be null or false)
+    return record.groupName ?? null;
+  };
+
   export const getGroupAvailability = async (sessionId, number) => {
     const record = await checkNumbersModel.findOne({ sessionId : sessionId, number });
     if (!record) {
