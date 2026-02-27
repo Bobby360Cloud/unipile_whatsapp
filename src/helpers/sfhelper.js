@@ -851,7 +851,7 @@ export async function sendDelivery(arrOfDelivery, needFromSf = false) {
           const status = objOfDelivery?.status;
           let deliveryObj = {
             type: "Delivery",
-            FromNumber: objOfDelivery?.senderNumber,
+            FromNumber: objOfDelivery?.fromNumber,
             WhatsAppSyncDate: objOfDelivery?.deliveryTimestamp,
             DeliveryStatus: [{ messageId: messageId, status: status }],
           };

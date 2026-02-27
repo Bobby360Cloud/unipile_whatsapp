@@ -3,7 +3,7 @@ import constants ,{ createMessageObj, unipileHeaders }   from "./constants";
 import { updateGroup } from "./dbhelper";
 import { getGroupAvailability, getGroupName, isGroupSupported } from "./helper";
 import makeRequest from "./request";
-import { CheckAvailableNumbers, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
+import { CheckAvailableNumbers, sendDelivery, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
 import { fileTypeFromBuffer } from "file-type";
 
 
@@ -378,3 +378,47 @@ export const editMessageParser = async (message) => {
     
   }
 }
+
+
+
+export const deliveryParser = async (message) =>{
+  try {
+    const accountId = message?.account_id;
+    if(!accountId) return ;
+    const userRec = await userModel.findOne({account_id : accountId});
+    if(!userRec){
+      console.log(" user record not exist for the user !!!!");
+      return;
+    } 
+    const sessionId = userRec?.sessionId;
+    if (!sessionId) {
+        console.log("Session ID not found for phone ID:", phone);
+        return;
+      }   
+       const arrOfDelivery = [];
+      if(message?.provider_chat_id?.endsWith("@lid") || message?.provider_chat_id?.endsWith("@s.whatsapp.net")){
+        let fromNumber = message?.sender?.attendee_specifics?.phone_number;
+        if (fromNumber && fromNumber.startsWith("+")) {
+            fromNumber = fromNumber.slice(1);
+        }
+        let status = "Failed"
+        if(message?.event ==='message_delivered'){
+          status = "delivered"
+        }else if (message?.event ==='message_read'){
+          status = "read"
+        }
+        const delivery = {
+          sessionId,
+          messageId: message?.provider_message_id,
+          status: status,
+          deliveryTimestamp: message?.timestamp,
+          fromNumber,
+        };
+        arrOfDelivery.push(delivery);
+
+      }
+    await sendDelivery(arrOfDelivery);
+  } catch (err) {
+    console.log(err.message);
+  }
+};
