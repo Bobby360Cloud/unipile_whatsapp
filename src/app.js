@@ -6,8 +6,6 @@ import Config from './configs/config';
 import cookieParser from 'cookie-parser';
 
 import indexRouter from './routes/index.js';
-import authRouter from './routes/authRoutes.js';
-import messageRouter from './routes/messageRoutes.js';
 import dbConnect from './configs/dbconfig.js';
 
 var app = express();
@@ -25,10 +23,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/api', indexRouter);
 
-app.use('/', authRouter);
-app.use('/msg', messageRouter);
+app.use('/', indexRouter);
 // app.use('/', indexRouter)
 
 // catch 404 and forward to error handler

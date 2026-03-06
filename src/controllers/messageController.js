@@ -1,6 +1,8 @@
 import { UnipileClient } from 'unipile-node-sdk';
 import config from '../configs/config';
 import { deliveryParser, editMessageParser, groupMessageParser, oneToOneMessageParser } from '../helpers/messageParser';
+import constants from '../helpers/constants';
+import makeRequest from '../helpers/request';
 export async function msgWebhook(req, res) {
     const message = req?.body ;
     if (message && message.account_type === 'WHATSAPP' && message.is_group === false && message?.event ==='message_received') {
@@ -59,3 +61,39 @@ export async function msgWebhook(req, res) {
       throw error;
     }
   }
+
+
+
+
+
+  export const deleteMsgToWhatsapp = async (req, res) => {
+  try {
+    const messageId = req?.body?.messageId;
+    if (!messageId) {
+      return res.json({ status: 400, message: "Please provide all mandatory fields" })
+    }
+    
+      const deleteUrl = constants.routes_Url.getMessageUrl(messageId);
+       const req = {
+        method: "delete",
+        url: deleteUrl,
+        headers: constants.unipileHeaders,
+      }
+      let deleteMesg = await makeRequest(req);
+      if (deleteMesg && deleteMesg.status === 200) {
+        return res.json({
+          status: 200,
+          message: "message deleted successfully",
+          messageId: messageId
+        });
+      } else {
+        return res.json({ status: 400, message: `Error in deleting message` });
+      }
+
+  } catch (error) {
+    console.log(error.message);
+    return res.json({ status: 401, message: "technical error" });
+  }
+};
+
+

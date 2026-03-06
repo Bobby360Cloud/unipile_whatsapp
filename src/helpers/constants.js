@@ -6,6 +6,7 @@ export default {
     getAccountDetail : (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
     getQr : `${UNIPILE_DSN}/api/v1/accounts`,
     getAttachmentUrl : (messageId , attachmentId) =>`${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
+    getMessageUrl : (messageId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>

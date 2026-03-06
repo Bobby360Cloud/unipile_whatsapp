@@ -88,7 +88,7 @@ export const validateQRRequest = async (req, res, next) => {
 export const validateRequest = async (req, res, next) => {
   const orgId = req?.body?.orgid || req?.query?.orgid;
   const userId = req?.body?.userid || req?.query?.userid;
-  const { isValidOrgUser, sessionId, userExits, loggedIn } =
+  const { isValidOrgUser, sessionId, userExist, loggedIn } =
     await getSessionFromValidOrgUser(orgId, userId);
   if (!isValidOrgUser) {
     res.json({
@@ -99,7 +99,7 @@ export const validateRequest = async (req, res, next) => {
   }
   if (!loggedIn) return res.json({ status: 400, message: "Inative Session" });
   req.body.sessionId = sessionId;
-  req.body.userExits = userExits;
+  req.body.userExist = userExist;
   next();
 };
 
@@ -121,4 +121,65 @@ export async function webhook(req, res) {
     }
   }
   res.status(200).send('Webhook received');
+}
+
+
+export async function checkSession(req, res) {
+  try {
+    const orgId = req && req.query && req.query.orgid;
+    const userId = req && req.query && req.query.userid;
+    const { isValidOrgUser, loggedIn } =
+      await getSessionFromValidOrgUser(orgId, userId);
+    if (!isValidOrgUser) {
+      return res.json({
+        status: 400,
+        message: "Please provide a valid Organisation Id or User Id",
+      });
+    }
+
+    if (loggedIn) {
+      res.json({ status: 200, message: `Session is Active` });
+    } else {
+      res.json({ status: 400, message: `Session is not active` });
+    }
+  } catch (e) {
+    res.json({ status: 400, message: "Error while getting session" });
+  }
+}
+
+export const checkOrgUserStatus = async (req, res) => {
+  try {
+    console.log("req---", req.body);
+    //need userId as well....
+    if (req && req.body && req.body.orgId) {
+      const orgId = req.body.orgId;
+      const totalUsersForOrg = await userModel.find({
+        sessionId: { $regex: `^${orgId}` },
+      });
+      let infoAboutOrg = [];
+      if(totalUsersForOrg && totalUsersForOrg.length > 0) {
+        totalUsersForOrg.forEach(user => {
+            infoAboutOrg.push({
+              userId: user.userId,
+              orgId: user.orgId,
+              loggedIn: user?.number ? true : false
+            })
+        })
+      
+        res.status(200).json({ infoAboutOrg: infoAboutOrg });
+      } else {
+        res.status(200).json({ message: "No Active session with the given org id" });
+      }
+    }else {
+      return res.json({
+        status: 400,
+        message: "Please provide a valid Organisation Id",
+      });
+    }
+
+  }
+  catch (e) {
+    console.log("error in the checkOrgUserStatus ---", e);
+    res.status(400).json({ error: true });
+  }
 }
