@@ -1,7 +1,6 @@
 import { UnipileClient } from 'unipile-node-sdk';
 import config from '../configs/config';
 import { makeRequest } from "../helpers/request"
-import QRCode from 'qrcode';
 import { getSessionFromValidOrgUser } from '../helpers/validator';
 import userModel from '../models/user.model';
 import constants, { unipileHeaders } from '../helpers/constants';
@@ -16,51 +15,20 @@ export async function getQr(req, res) {
     console.log("user")
     if (loggedIn) {
       return res.render("authenticated", { status: 200, message: "You are authenticated." });
+    }else{
+       await userModel.findOneAndUpdate(
+            { sessionId: sessionId },
+            {
+                $set: {
+                    orgId: orgId,
+                    userId: userId,
+                    custom_namespace: namespace
+
+                }
+            },
+            { upsert: true, new: true })
+      return res.render("scan", { HOST: process.env.APP_HOST, orgId, userId });
     }
-
-
-    const url = constants.routes_Url.getQr
-    const reqData = {
-      method: 'post',
-      url: url,
-      headers: unipileHeaders,
-      data: {
-        "provider": "WHATSAPP"
-      }
-    }
-    const qrRes = await makeRequest(reqData);
-    console.log("accountDetails =============", qrRes?.data);
-    const qrCodeText = qrRes?.data?.checkpoint?.qrcode;
-
-    if (!qrCodeText) {
-      return res.render("error", {
-        message: "couldn't generate qr",
-        error: "error",
-      });
-    }
-    // Step 2 — convert QR text → PNG Base64
-    const qr = await QRCode.toDataURL(qrCodeText);
-    if (qr && qrRes?.data?.account_id) {
-      await userModel.findOneAndUpdate(
-        { sessionId: sessionId },
-        {
-          $set: {
-            orgId: orgId,
-            userId: userId,
-            custom_namespace: namespace,
-            account_id: qrRes.data.account_id
-          }
-        },
-        { upsert: true, new: true }
-      );
-      console.log("Generated QR Code:");
-      // Step 3 — render in EJS
-      return res.render("scan", { src: qr });
-    } else {
-      return res.render("authenticated", { status: 200, message: "Could not generate qr at the moment. Try again after some time." });
-    }
-
-
 
   }
   catch (error) {
@@ -113,11 +81,11 @@ export async function webhook(req, res) {
       // Perform actions for connecting status
       // setup loader functionality
     }else if (AccountStatus?.message === 'OK' && AccountStatus?.account_id) {
-        await manageUnipileLogin (AccountStatus.account_id) 
+        await manageUnipileLogin(AccountStatus.account_id) 
     } else if (AccountStatus?.message === 'SYNC_SUCCESS') {
       // if want to show syncing on 
     } else if (AccountStatus?.message === 'CREDENTIALS' && req.body?.reason === 'Disconnected' && AccountStatus?.account_id) {
-      await manageUnipileLogout (AccountStatus.account_id)
+      await manageUnipileLogout(AccountStatus.account_id);
     }
   }
   res.status(200).send('Webhook received');

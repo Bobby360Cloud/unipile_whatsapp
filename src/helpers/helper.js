@@ -3,6 +3,7 @@ import checkNumbersModel from "../models/checkNumbers.model";
 import { updateSFUserLogTime } from "./sfhelper";
 import constants, { unipileHeaders } from "./constants";
 import makeRequest from "./request";
+import { emitStatus } from "../configs/socketconfig";
 
 export const getMessageTime = (time) => {
     console.log("time.................",time);
@@ -125,9 +126,11 @@ export const getMessageTime = (time) => {
       if (accountDeatils?.data?.name) {
         const userDetails = await userModel.findOneAndUpdate({ account_id: account_id }, {
           $set: {
-            number: accountDeatils?.data?.name
+            number: accountDeatils?.data?.name,
+            loggedIn:true
           }
         }, { new: true })
+        emitStatus(userDetails.sessionId, { status: 'authenticated', phone: userDetails.number });
         console.log("userDetails on login ========", userDetails);
         await saveUserLogTime(userDetails.sessionId, true);
       }
@@ -141,7 +144,8 @@ export const getMessageTime = (time) => {
       const userDetail = await userModel.findOneAndUpdate({ account_id: account_id }, {
         $set: {
           number: null,
-          account_id: null
+          account_id: null,
+          loggedIn:false
         }
       }, { new: true })
 

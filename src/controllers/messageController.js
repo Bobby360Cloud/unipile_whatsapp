@@ -9,12 +9,13 @@ import { numberUpdateWithTrue } from '../helpers/dbhelper';
 import https from 'https';
 
 export async function msgWebhook(req, res) {
-  const message = req?.body;
-  if (message && message.account_type === 'WHATSAPP' && message.is_group === false && message?.event === 'message_received') {
-    console.log("Webhook received: for one to one messages ", message?.account_id);
-    console.log("Full request body: for one to one messages ", JSON.stringify(req.body, null, 2));
-    await oneToOneMessageParser(message);
-  } else if (message && message.account_type === 'WHATSAPP' && message.is_group === true && message?.event === 'message_received') {
+    const message = req?.body ;
+  if(message.account_type !== 'WHATSAPP') return res.status(200).send('Webhook received');
+  if (message && message.account_type === 'WHATSAPP' && message.is_group === false && message?.event ==='message_received') {
+      console.log("Webhook received: for one to one messages ", message?.account_id);
+      // console.log("Full request body: for one to one messages ", JSON.stringify(req.body, null, 2));
+    await oneToOneMessageParser(message); 
+  }else if (message && message.account_type === 'WHATSAPP' && message.is_group === true && message?.event ==='message_received') {
     console.log("Webhook received: for group messages ", message?.account_id);
     // console.log("Full request body: for group messages ", JSON.stringify(req.body, null, 2));
     await groupMessageParser(message);

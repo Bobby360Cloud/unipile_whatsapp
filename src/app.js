@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 
 import indexRouter from './routes/index.js';
 import dbConnect from './configs/dbconfig.js';
+import { initializeSocket } from './configs/socketconfig.js';
 
 var app = express();
 
@@ -42,5 +43,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 }); 
-var server = app.listen(Config.port, () => console.log(`Listening on port ${Config.port}`));
-export default app;
+const server = initializeSocket(app);
+server.listen(Config.port, () => console.log(`Listening on port ${Config.port}`));

@@ -13,6 +13,7 @@ const userSchema=mongoose.Schema({
     timestamps:{type:String},
     isGroupSupported:{type:Boolean, default: false},
     custom_namespace: String,
+    loggedIn:{type:Boolean, default: false}
 
 },{timestamps: { createdAt: 'createdat', updatedAt: 'updatedat' }})
 
