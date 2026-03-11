@@ -7,6 +7,8 @@ export default {
     getQr : `${UNIPILE_DSN}/api/v1/accounts`,
     getAttachmentUrl : (messageId , attachmentId) =>`${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
     getMessageUrl : (messageId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}`,
+    sendMsgUrl :(chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}/messages`,
+    startNewChatUrl : `${UNIPILE_DSN}/api/v1/chats`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>
@@ -107,9 +109,10 @@ export class createMessageObj {
     this.messageTimestamp = messageTimestamp;
     if (isEdit) this.isEdit = isEdit;
   }
-  setMediaMessage(image, mimetype) {
+  setMediaMessage(image, mimetype, filename) {
     this.image = image;
     this.mimetype = mimetype;
+    this.filename = filename;
   }
 
   setLocationMessage(degreesLatitude , degreesLongitude){

@@ -53,7 +53,7 @@ export const oneToOneMessageParser = async (message) =>
             const attachments = message?.attachments ;
               if (attachments && attachments.length > 0 && attachments?.[0]?.attachment_id) {
                 messageObj.setTextMessage(
-                  message?.provider_message_id,
+                  message?.message_id,
                   text,
                   message?.timestamp
                 );
@@ -72,9 +72,10 @@ export const oneToOneMessageParser = async (message) =>
                 const base64String = response?.data?.toString("base64");
                 const fileType = await fileTypeFromBuffer(response?.data);
                 const mimetype = fileType?.mime || attachments?.[0]?.attachment_type ;
-                messageObj.setMediaMessage(base64String , mimetype);
+                const filename = attachments?.[0]?.attachment_name ;
+                messageObj.setMediaMessage(base64String , mimetype , filename);
               } else {
-                messageObj.setTextMessage(message?.provider_message_id, text ,message?.timestamp);
+                messageObj.setTextMessage(message?.message_id, text ,message?.timestamp);
               }
 
             console.log(messageObj);
@@ -174,7 +175,7 @@ export const groupMessageParser = async (message) => {
       const attachments = message?.attachments ;
       if (attachments && attachments.length > 0 && attachments?.[0]?.attachment_id) {
         messageObj.setTextMessage(
-          message?.provider_message_id,
+          message?.message_id,
           text,
           message?.timestamp
         );
@@ -193,9 +194,10 @@ export const groupMessageParser = async (message) => {
         const base64String = response?.data?.toString("base64");
         const fileType = await fileTypeFromBuffer(response?.data);
         const mimetype = fileType?.mime || attachments?.[0]?.attachment_type ;
-        messageObj.setMediaMessage(base64String , mimetype);
+        const filename = attachments?.[0]?.attachment_name ;
+        messageObj.setMediaMessage(base64String , mimetype , filename);
       } else {
-        messageObj.setTextMessage(message?.provider_message_id, text ,message?.timestamp);
+        messageObj.setTextMessage(message?.message_id, text ,message?.timestamp);
       }
 
 
@@ -278,7 +280,7 @@ export const editMessageParser = async (message) => {
         accountId, 
         chatId
       );
-      messageObj.setTextMessage(message?.provider_message_id, text ,message?.timestamp, true);
+      messageObj.setTextMessage(message?.message_id, text ,message?.timestamp, true);
     }
     else if(message.is_group){
      groupId = message?.provider_chat_id;
@@ -365,7 +367,7 @@ export const editMessageParser = async (message) => {
         }
       }
       messageObj.setTextMessage(
-        message?.provider_message_id, text ,message?.timestamp , true
+        message?.message_id, text ,message?.timestamp , true
       );
     }
     console.log("edit message object....................", messageObj);

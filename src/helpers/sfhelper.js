@@ -770,7 +770,7 @@ async function getcontentVersionId(messageOfMobile, accessToken, instanceUrl) {
     let ContentDocumentId, name, nameId;
     const fileExtension = mime.extension(messageOfMobile?.mimetype);
     console.log("fileExtension---", fileExtension);
-    name = `360SMS${Date.now()}.${fileExtension}`;
+    name =messageOfMobile?.filename || `360SMS${Date.now()}.${fileExtension}`;
     if (!fileExtension || fileExtension === 'undefined' || fileExtension === 'null') {
       return {};
     }

@@ -4,7 +4,7 @@ import { unipileHeaders } from './constants';
 
 export async function makeRequest(req) {
     try {
-        const { method, url, headers, data, responseType} = req;
+        const { method, url, headers, data, responseType , httpsAgent} = req;
         const config = {
             method: method || 'get',  
             url: url,
@@ -12,6 +12,9 @@ export async function makeRequest(req) {
         };
         if(responseType){
             config.responseType = responseType
+        }
+        if(httpsAgent){
+            config.httpsAgent = httpsAgent
         }
         if(method=='post' || method=='patch') config['data']=data || {};
         let response = await axios(config);
