@@ -17,7 +17,7 @@ router.post('/msg/webhook', msgWebhook);  //ok tested
 router.get('/checkSession', checkSession); 
 router.post("/checkOrgUserStatus", checkOrgUserStatus);
 
-// router.get("/updateNumAvailability", updateCheckNumber); //ok tested 
+//router.get("/updateNumAvailability", updateCheckNumber); //ok tested 
 
 router.post('/sendMessage', validateRequest, sendMsgFunc);
 // router.post("/editMessage", validateRequest, sendEditMsgToWhatsapp);  

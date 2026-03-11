@@ -35,3 +35,12 @@ export const handleQRGeneration = async (sessionId) => {
     }
 
 }
+
+export const handlewebhookSetup = async(account_id) => {
+    //const url = constants.routes_Url.setupWebhook(account_id);
+    APP_HOST
+}
+
+export const getaccountStatus = async(account_id) => {
+    const url = constants.routes_Url.getAccountDetail(account_id);
+}
