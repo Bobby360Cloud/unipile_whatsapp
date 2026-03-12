@@ -4,7 +4,7 @@ import { updateGroup } from "./dbhelper";
 import { getGroupAvailability, getGroupName, isGroupSupported } from "./helper";
 import makeRequest from "./request";
 import { CheckAvailableNumbers, sendDelivery, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
-import { fileTypeFromBuffer } from "file-type";
+import FileType ,{ fileTypeFromBuffer } from "file-type";
 import accountModel from "../models/account.model";
 
 
@@ -27,7 +27,8 @@ export const oneToOneMessageParser = async (message) =>
             
               const messageObj = new createMessageObj(sessionId);
               
-            let toNumber = message?.attendees?.[0]?.attendee_specifics?.phone_number;
+            let toNumber = message?.account_info?.phone_number;
+            console.log("toNumber before formatting: ", message?.attendees?.[0]?.attendee_specifics);
             if (toNumber && toNumber.startsWith("+")) {
                 toNumber = toNumber.slice(1);
             }
@@ -42,6 +43,8 @@ export const oneToOneMessageParser = async (message) =>
               if (text === '-- Unipile cannot display this type of message yet, check the native application --') return
               const fromMe = message?.is_sender ;
               const chatId = message?.chat_id ;
+              if(fromMe)
+                toNumber = message?.attendees?.[0]?.attendee_specifics?.phone_number?.replace("+", "");
               console.log("fromMe...................", fromMe);
               messageObj.setMessgeInfo(
                 fromMe,
@@ -70,9 +73,9 @@ export const oneToOneMessageParser = async (message) =>
                 }
 
                 const response = await makeRequest(reqBody) ;
-                // const buffer = await getFileBuffer(message?.url);
                 const base64String = response?.data?.toString("base64");
-                const fileType = await fileTypeFromBuffer(response?.data);
+                const fileType = await FileType.fromBuffer(response?.data); 
+                console.log("fileType from file-type package: ", fileType);
                 const mimetype = fileType?.mime || attachments?.[0]?.attachment_type ;
                 const filename = attachments?.[0]?.attachment_name ;
                 messageObj.setMediaMessage(base64String , mimetype , filename);
@@ -85,6 +88,7 @@ export const oneToOneMessageParser = async (message) =>
               await sendMobIncomingOutgoingMsgToSF(messageObj);
             }
           } catch (error) {
+            console.log("Error in oneToOneMessageParser: ", error);
             
         }
 }
@@ -194,7 +198,7 @@ export const groupMessageParser = async (message) => {
         const response = await makeRequest(reqBody) ;
         // const buffer = await getFileBuffer(message?.url);
         const base64String = response?.data?.toString("base64");
-        const fileType = await fileTypeFromBuffer(response?.data);
+        const fileType = await FileType.fromBuffer(response?.data); 
         const mimetype = fileType?.mime || attachments?.[0]?.attachment_type ;
         const filename = attachments?.[0]?.attachment_name ;
         messageObj.setMediaMessage(base64String , mimetype , filename);
@@ -267,7 +271,7 @@ export const editMessageParser = async (message) => {
 
 
     if (!message?.is_group) {
-      toNumber = message?.attendees?.[0]?.attendee_specifics?.phone_number;
+      toNumber = message?.is_sender? message?.attendees?.[0]?.attendee_specifics?.phone_number:message?.account_info?.phone_number ;
       if (toNumber && toNumber.startsWith("+")) {
           toNumber = toNumber.slice(1);
       }

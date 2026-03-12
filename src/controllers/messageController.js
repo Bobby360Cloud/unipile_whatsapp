@@ -16,7 +16,7 @@ export async function msgWebhook(req, res) {
       // console.log("Full request body: for one to one messages ", JSON.stringify(req.body, null, 2));
     await oneToOneMessageParser(message); 
   }else if (message && message.account_type === 'WHATSAPP' && message.is_group === true && message?.event ==='message_received') {
-    console.log("Webhook received: for group messages ", message?.account_id);
+    console.log("Webhook received: for group messages ", message);
     // console.log("Full request body: for group messages ", JSON.stringify(req.body, null, 2));
     await groupMessageParser(message);
   } else if (message && message.account_type === 'WHATSAPP' && message?.event === 'message_edited') {

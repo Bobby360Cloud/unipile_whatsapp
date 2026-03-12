@@ -8,7 +8,8 @@ const AccountSchema = new mongoose.Schema({
   sessionId : {
     type: String,
     required: true,
-    index: true
+    index: true,
+    unique: true
   },
   number: {
     type: String,
