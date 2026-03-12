@@ -8,4 +8,5 @@ export default {
   UNIPILE_API_KEY: process.env.UNIPILE_API_KEY ,
   MONGODB_URL: process.env.MONGODB_URI,
   PHP_SERVER_URL:process.env.PHP_SERVER_URL,
+  APP_HOST: process.env.APP_HOST,
 };

@@ -4,6 +4,7 @@ export default {
   baseAPI: "",
   routes_Url: {
     getAccountDetail : (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
+    setupWebhook : (account_id) => `${UNIPILE_DSN}/api/v1/accounts/${account_id}/webhooks`,
     getQr : `${UNIPILE_DSN}/api/v1/accounts`,
     getAttachmentUrl : (messageId , attachmentId) =>`${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
     getMessageUrl : (messageId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}`,
