@@ -12,7 +12,7 @@ export const getSessionFromValidOrgUser = async (orgId, userId ) => {
       { sessionId: validObj.sessionId }
     );
     validObj['userExist'] = userData;
-    validObj['loggedIn'] =userData?.number ? true : false   
+    validObj['loggedIn'] = userData?.number ? true : false   
       console.log(validObj); 
     return validObj;
     }

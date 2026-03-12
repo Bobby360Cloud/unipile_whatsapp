@@ -5,21 +5,23 @@ import { getGroupAvailability, getGroupName, isGroupSupported } from "./helper";
 import makeRequest from "./request";
 import { CheckAvailableNumbers, sendDelivery, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
 import { fileTypeFromBuffer } from "file-type";
+import accountModel from "../models/account.model";
 
 
 export const oneToOneMessageParser = async (message) =>
     {
         try {
+          console.log("inside one to one message parser ====================", message);
             const accountId = message?.account_id;
             if(!accountId) return ;
-            const userRec = await userModel.findOne({account_id : accountId});
+            const userRec = await accountModel.findOne({account_id : accountId});
             if(!userRec){
-              console.log(" user record not exist for the user !!!!");
+              console.log(" Account record does not exist for the user !!!!");
               return;
             } 
             const sessionId = userRec?.sessionId;
             if (!sessionId) {
-                console.log("Session ID not found for phone ID:", phone);
+                console.log("Session ID not found for accountId:", accountId);
                 return;
               }
             
@@ -93,16 +95,16 @@ export const groupMessageParser = async (message) => {
   try {
     const accountId = message?.account_id;
     if(!accountId) return ;
-    const userRec = await userModel.findOne({account_id : accountId});
-    if(!userRec){
-      console.log(" user record not exist for the user !!!!");
-      return;
-    } 
-    const sessionId = userRec?.sessionId;
-    if (!sessionId) {
-        console.log("Session ID not found for phone ID:", phone);
-        return;
-    }
+    const userRec = await accountModel.findOne({account_id : accountId});
+            if(!userRec){
+              console.log(" Account record does not exist for the user !!!!");
+              return;
+            } 
+            const sessionId = userRec?.sessionId;
+            if (!sessionId) {
+                console.log("Session ID not found for accountId:", accountId);
+                return;
+              }
     const messageObj = new createMessageObj(sessionId);
 
 
@@ -242,17 +244,16 @@ export const editMessageParser = async (message) => {
   try {
     const accountId = message?.account_id;
     if(!accountId) return ;
-    const userRec = await userModel.findOne({account_id : accountId});
-    if(!userRec){
-      console.log(" user record not exist for the user !!!!");
-      return;
-    } 
-    const sessionId = userRec?.sessionId;
-    
-    if (!sessionId) {
-      console.log("Session ID not found for phone ID:", phone);
-      return;
-    }
+    const userRec = await accountModel.findOne({account_id : accountId});
+            if(!userRec){
+              console.log(" Account record does not exist for the user !!!!");
+              return;
+            } 
+            const sessionId = userRec?.sessionId;
+            if (!sessionId) {
+                console.log("Session ID not found for accountId:", accountId);
+                return;
+              }
     const messageObj = new createMessageObj(sessionId);
     let fromNumber = message?.sender?.attendee_specifics?.phone_number;
     if (fromNumber && fromNumber.startsWith("+")) {
@@ -387,16 +388,16 @@ export const deliveryParser = async (message) =>{
   try {
     const accountId = message?.account_id;
     if(!accountId) return ;
-    const userRec = await userModel.findOne({account_id : accountId});
-    if(!userRec){
-      console.log(" user record not exist for the user !!!!");
-      return;
-    } 
-    const sessionId = userRec?.sessionId;
-    if (!sessionId) {
-        console.log("Session ID not found for phone ID:", phone);
-        return;
-      }   
+    const userRec = await accountModel.findOne({account_id : accountId});
+            if(!userRec){
+              console.log(" Account record does not exist for the user !!!!");
+              return;
+            } 
+            const sessionId = userRec?.sessionId;
+            if (!sessionId) {
+                console.log("Session ID not found for accountId:", accountId);
+                return;
+              }  
        const arrOfDelivery = [];
       if(message?.provider_chat_id?.endsWith("@lid") || message?.provider_chat_id?.endsWith("@s.whatsapp.net")){
         let fromNumber = message?.sender?.attendee_specifics?.phone_number;
@@ -411,7 +412,7 @@ export const deliveryParser = async (message) =>{
         }
         const delivery = {
           sessionId,
-          messageId: message?.provider_message_id,
+          messageId: message?.message_id,
           status: status,
           deliveryTimestamp: message?.timestamp,
           fromNumber,

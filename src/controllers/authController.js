@@ -6,6 +6,7 @@ import userModel from '../models/user.model';
 import constants, { unipileHeaders } from '../helpers/constants';
 import checkNumbersModel from '../models/checkNumbers.model';
 import { manageUnipileLogin, manageUnipileLogout, saveUserLogTime } from '../helpers/helper';
+import accountModel from '../models/account.model'
 
 export async function getQr(req, res) {
 
@@ -125,19 +126,25 @@ export const checkOrgUserStatus = async (req, res) => {
         sessionId: { $regex: `^${orgId}` },
       });
       let infoAboutOrg = [];
-      if(totalUsersForOrg && totalUsersForOrg.length > 0) {
-        totalUsersForOrg.forEach(user => {
-            infoAboutOrg.push({
-              userId: user.userId,
-              orgId: user.orgId,
-              loggedIn: user?.number ? true : false
-            })
-        })
-      
-        res.status(200).json({ infoAboutOrg: infoAboutOrg });
-      } else {
-        res.status(200).json({ message: "No Active session with the given org id" });
+      if (totalUsersForOrg && totalUsersForOrg.length > 0) {
+  for (const user of totalUsersForOrg) {
+    const accountDetails = await accountModel.findOne({
+      sessionId: user.sessionId
+    });
+
+    infoAboutOrg.push({
+      userId: user.userId,
+      orgId: user.orgId,
+      loggedIn: accountDetails?.loggedIn ? true : false
+      });
       }
+      } 
+        if(infoAboutOrg.length > 0){
+        res.status(200).json({ infoAboutOrg: infoAboutOrg });
+        }
+        res.status(200).json({ message: "No users found for the given org id" });
+
+
     }else {
       return res.json({
         status: 400,

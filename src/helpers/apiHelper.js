@@ -6,36 +6,43 @@ import userModel from '../models/user.model';
 import accountModel from '../models/account.model';
 import config from '../configs/config';
 
-export const handleQRGeneration = async (sessionId) => {
-    const url = constants.routes_Url.getQr
-    const reqData = {
-        method: 'post',
-        url: url,
-        headers: unipileHeaders,
-        data: {
-            "provider": "WHATSAPP"
-        }
+export const handleQRGeneration = async (sessionId) => { 
+    try {
+      const url = constants.routes_Url.getQr
+      const reqData = {
+          method: 'post',
+          url: url,
+          headers: unipileHeaders,
+          data: {
+              "provider": "WHATSAPP"
+          }
+      }
+      const qrRes = await makeRequest(reqData);
+      console.log("accountDetails =============", qrRes);
+      const qrCodeText = qrRes?.data?.checkpoint?.qrcode;
+      console.log("qr code text ===========". qrCodeText);
+      let qr ;
+      if(qrCodeText){
+        qr = await QRCode?.toDataURL(qrCodeText);
+      }   
+      if (qr)
+          emitStatus(sessionId, { status: 'qr_generated', src: qr });
+      else
+          emitStatus(sessionId, { status: 'qr_error' });
+      if (qr && qrRes?.data?.account_id) {
+          await accountModel.findOneAndUpdate(
+              { sessionId: sessionId },
+              {
+                  $set: {
+                      account_id: qrRes.data.account_id
+                  }
+              },
+              { upsert: true, new: true }
+          );
+      }
+    } catch (error) {
+      console.log("Error generating QR code:", error.message);
     }
-    const qrRes = await makeRequest(reqData);
-    console.log("accountDetails =============", qrRes?.data);
-    const qrCodeText = qrRes?.data?.checkpoint?.qrcode;
-    const qr = await QRCode.toDataURL(qrCodeText);
-    if (qr)
-        emitStatus(sessionId, { status: 'qr_generated', src: qr });
-    else
-        emitStatus(sessionId, { status: 'qr_error' });
-    if (qr && qrRes?.data?.account_id) {
-        await accountModel.findOneAndUpdate(
-            { sessionId: sessionId },
-            {
-                $set: {
-                    account_id: qrRes.data.account_id
-                }
-            },
-            { upsert: true, new: true }
-        );
-    }
-
 }
 
 export const handlewebhookSetup = async(account_id) => {
