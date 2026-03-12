@@ -10,6 +10,7 @@ export default {
     getMessageUrl : (messageId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}`,
     sendMsgUrl :(chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}/messages`,
     startNewChatUrl : `${UNIPILE_DSN}/api/v1/chats`,
+    getChatInfo : (chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>
