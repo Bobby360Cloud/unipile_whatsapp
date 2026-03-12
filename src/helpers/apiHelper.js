@@ -18,7 +18,7 @@ export const handleQRGeneration = async (sessionId) => {
           }
       }
       const qrRes = await makeRequest(reqData);
-      console.log("accountDetails =============", qrRes);
+      console.log("accountDetails =============", qrRes?.data);
       const qrCodeText = qrRes?.data?.checkpoint?.qrcode;
       console.log("qr code text ===========". qrCodeText);
       let qr ;
