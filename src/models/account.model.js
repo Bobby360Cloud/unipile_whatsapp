@@ -13,7 +13,8 @@ const AccountSchema = new mongoose.Schema({
   number: {
     type: String,
     index: true
-  }
+  },
+  loggedIn:{type:Boolean, default: false}
  
 }, { 
   timestamps: true 

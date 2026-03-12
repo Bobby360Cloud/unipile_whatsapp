@@ -3,6 +3,7 @@ import {makeRequest} from "./request"
 import constants,{unipileHeaders} from "./constants"
 import { emitStatus } from "../configs/socketconfig"
 import userModel from '../models/user.model';
+import accountModel from '../models/account.model';
 
 export const handleQRGeneration = async (sessionId) => {
     const url = constants.routes_Url.getQr
@@ -23,7 +24,7 @@ export const handleQRGeneration = async (sessionId) => {
     else
         emitStatus(sessionId, { status: 'qr_error' });
     if (qr && qrRes?.data?.account_id) {
-        await userModel.findOneAndUpdate(
+        await accountModel.findOneAndUpdate(
             { sessionId: sessionId },
             {
                 $set: {

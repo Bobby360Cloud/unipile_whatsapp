@@ -1,3 +1,4 @@
+import accountModel from "../models/account.model.js";
 import userModel  from "../models/user.model.js";
 import crypto from "crypto";
 
@@ -7,7 +8,9 @@ export const getSessionFromValidOrgUser = async (orgId, userId ) => {
   if (validObj.isValidOrgUser) {
     validObj['sessionId'] = String(orgId) + String(userId);
 
-    const userData = await userModel.findOne({sessionId : validObj.sessionId});
+    const userData = await accountModel.findOne(
+      { sessionId: validObj.sessionId }
+    );
     validObj['userExist'] = userData;
     validObj['loggedIn'] =userData?.number ? true : false   
       console.log(validObj); 
