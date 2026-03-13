@@ -6,6 +6,7 @@ import Config from './configs/config';
 import cookieParser from 'cookie-parser';
 
 import indexRouter from './routes/index.js';
+import indexV1Router from './routes/indexV1.js';
 import dbConnect from './configs/dbconfig.js';
 import { initializeSocket } from './configs/socketconfig.js';
 
@@ -26,7 +27,7 @@ app.use(cookieParser());
 
 
 app.use('/', indexRouter);
-// app.use('/', indexRouter)
+app.use('/v1/',indexV1Router );
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

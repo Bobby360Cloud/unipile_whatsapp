@@ -1,6 +1,8 @@
 import accountModel from "../models/account.model.js";
 import userModel  from "../models/user.model.js";
 import crypto from "crypto";
+import { nodeRefreshTokenUpdateURl } from  "./constants.js" ;
+import { postRequest } from "./request.js";
 
 export const getSessionFromValidOrgUser = async (orgId, userId ) => {
   let validObj = {};
@@ -73,4 +75,61 @@ export function getOrgString (orgid){
         
     }
 }
+
+
+export const authValidator = async (req, res, next) => {
+    try {
+      console.log("inside request validator v1===============");
+      const authHeader = req?.headers?.authorization;
+      const orgId = req?.headers?.orgid;
+  
+      if (!authHeader || !orgId) {
+        return res.status(401).json({
+          success: false,
+          message: "Authorization failed !!"
+        });
+      }
+  
+      // Must be: Bearer <token>
+      const parts = authHeader.split(" ");
+  
+      if (parts.length !== 2 || parts[0] !== "Bearer" || !parts[1]) {
+        return res.status(401).json({
+          success: false,
+          message: "Authorization failed !!"
+        });
+      }
+  
+      const token = parts[1];
+      const authReqData = {
+        "orgid": orgId,
+        "productName":"360 SMS",
+      }
+
+      const headers = {
+        "Authorization" : `Bearer ${token}`
+      }
+
+      const serverUrl = nodeRefreshTokenUpdateURl(process.env.NODE_AUTHAPP_URL);
+
+      const responseFromNodeServer = await postRequest(headers , serverUrl , authReqData);
+      console.log("responseFromNodeServer", responseFromNodeServer?.data);
+      if(responseFromNodeServer?.status === 200){
+          return next();
+      }
+      return res.status(401).json({
+        success: false,
+        message: "Authorization failed !!"
+      });
+
+  
+     
+    } catch (error) {
+      console.error("Auth middleware error:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Authentication middleware failed"
+      });
+    }
+};
 

@@ -25,7 +25,7 @@ export const groupActivate=async(req,res)=>{
     res.status(500).json({ message: "Error in the group activation" });
   }
       
-  }
+}
 
 
 
@@ -109,5 +109,95 @@ export const createGroup = async (req, res) => {
 
   } catch (error) {
 
+  }
+}
+
+
+
+export const addRemoveParticipants = async (req, res)=>{
+  const { groupId, participants, action } = req.body;
+        const sessionId = req.sessionId;
+  try {
+    const processedAction = action.trim().toLowerCase();
+
+    // Check if the action is valid
+    if (!["add"].includes(processedAction)) {
+      throw new Error("Invalid action. Allowed actions are add");
+    }
+    // Validate groupId
+    if (!groupId || !groupId.endsWith("@g.us")) {
+      throw new Error("Invalid groupId");
+    }
+    // Validate participants
+    if (
+      !participants ||
+      participants.length === 0 ||
+      !Array.isArray(participants)
+    ) {
+      throw new Error("Participants array cannot be empty");
+    }
+    // Remove duplicate participants
+    const uniqueParticipants = [...new Set(participants)];
+    if (uniqueParticipants.length === 0) {
+      throw new Error(
+        "At least 1 participant is required to perform the action"
+      );
+    }
+    const chatRec = await checkNumbersModel.findOne({ sessionId, number: groupId });
+    if(!chatRec){
+      throw new Error("Group not found for the user");
+    }
+    
+    
+
+    const userRec = await userModel.findOne({sessionId});
+    if(!groupInfo?.admins?.includes(userRec.number + '@c.us')){
+      throw new Error("Only group admins can add/remove participants"); 
+    }
+    if(userRec?.chat_id){
+      for(let i=0; i<uniqueParticipants.length; i++){
+      const url = constants.routes_Url.getChatInfo(userRec.chat_id);
+      const reqData = {
+        method: "patch",
+        url: url,
+        headers: unipileHeaders,
+        data : {
+                "action": "addParticipant",
+                "value": uniqueParticipants[i] + "@s.whatsapp.net"
+              } 
+      }
+      const response = await makeRequest(reqData);
+      console.log(`Group ${processedAction} response for ${uniqueParticipants[i]} ===========`, response?.data);
+    }
+    const chatInfoUrl = constants.routes_Url.getChatInfo(userRec.chat_id);
+    const reqInfo = {
+        method: "get",
+        url: chatInfoUrl,
+        headers: unipileHeaders,
+        
+      }
+      const groupInfo = await makeRequest(reqInfo);
+      console.log(`Group ${processedAction} response for ${uniqueParticipants[i]} ===========`, groupInfo?.data);
+
+    }else{
+      res.send({
+      status: 400,
+      message: `User session not found please relogin and try again`,
+    });
+    }
+
+
+ 
+    res.send({
+      status: 200,
+      message: `Participants ${action} operation completed`,
+    });
+  } catch (error) {
+    console.error("Error in add/remove participants:", error.message);
+    res.send({
+      status: 403,
+      message: `Failed to ${action} participants`,
+      error: error.message,
+    });
   }
 }

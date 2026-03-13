@@ -3,7 +3,7 @@ import { getQr , validateQRRequest, webhook, validateRequest, checkSession, chec
 
 
 import {deleteMsgToWhatsapp, msgWebhook , sendMsgFunc} from '../controllers/messageController.js';
-import { createGroup, groupActivate } from '../controllers/groupController.js';
+import { createGroup, groupActivate, addRemoveParticipants } from '../controllers/groupController.js';
 
 const router = express.Router();
 
@@ -20,12 +20,11 @@ router.post("/checkOrgUserStatus", checkOrgUserStatus);
 //router.get("/updateNumAvailability", updateCheckNumber); //ok tested 
 
 router.post('/sendMessage', validateRequest, sendMsgFunc);
-// router.post("/editMessage", validateRequest, sendEditMsgToWhatsapp);  
 router.delete("/deleteMessage",validateRequest, deleteMsgToWhatsapp); 
 
 //group apis
 router.post('/createGroup', validateRequest, createGroup); 
-// router.post('/add/Remove/Participant', validateRequest, addRemoveParticipants);
+router.post('/add/Remove/Participant', validateRequest, addRemoveParticipants);
 router.post("/sendGroupMessage",validateRequest, sendMsgFunc); 
 router.get("/activategroup", groupActivate); 
 
