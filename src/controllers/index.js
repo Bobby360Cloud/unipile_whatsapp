@@ -1,5 +1,9 @@
 import accountModel from "../models/account.model";
-import { bulkUpdateNumbersWithFalse,bulkUpdateNumbersWithTrue } from "../helpers/dbhelper";
+import { bulkUpdateNumbersWithFalse,bulkUpdateNumbersWithTrue , updateGroup} from "../helpers/dbhelper";
+import { CheckAvailableNumbers } from "../helpers/sfhelper";
+import constants ,{ unipileHeaders } from  "../helpers/constants";
+import makeRequest from "../helpers/request";
+import checkNumbersModel from "../models/checkNumbers.model";
 
 export async function updateCheckNumber(req, res) {
     try {
@@ -11,7 +15,7 @@ export async function updateCheckNumber(req, res) {
       }
       let sessionId = orgId + userId;
       
-      console.log(`Starting updateCheckNumber for orgId: ${orgId}`);
+      console.log(`Starting updateCheckNumber for sessionId: ${sessionId}`);
       const userSession = await accountModel.findOne(
         { sessionId: sessionId,loggedIn: true }
       );
@@ -23,10 +27,10 @@ export async function updateCheckNumber(req, res) {
       }
   
       // Process groups (ending with @g.us)
-       processGroupsWithPagination(sessionId, userSession);
+       processGroupsWithPagination(sessionId ,userSession );
   
       // Process  numbers
-      processNumbersWithPagination(sessionId, userSession);
+      processNumbersWithPagination(sessionId);
   
       res.send({ status: 200, message: "Check number update completed successfully." });
     } catch (error) {
@@ -35,7 +39,7 @@ export async function updateCheckNumber(req, res) {
     }
   }
 
-  async function processGroupsWithPagination(sessionId, userSession) {
+  async function processGroupsWithPagination(sessionId , userSession) {
     console.log(`Processing groups for sessionId: ${sessionId}`);
   
     const pageSize = 1000;
@@ -45,7 +49,7 @@ export async function updateCheckNumber(req, res) {
     try {
       while (hasMore) {
         const query = {
-          orgId: orgId,
+          sessionId: sessionId,
           number: { $regex: /@g\.us$/ },
           ...(lastId && { _id: { $gt: lastId } })
         };
@@ -66,19 +70,33 @@ export async function updateCheckNumber(req, res) {
         lastId = records[records.length - 1]._id;
     
         for (const record of records) {
-          const group = record.number;
-          const groupName = record.groupName ;
-          if (!group) continue;
-          const groupInfo = await getGroupInfo(userSession?.sessionId ,group );
-          if(groupInfo){
-            const participantNumber = groupInfo?.participants?.map((participant) =>
-            participant.replace("@c.us", "")
-          );
+          const group = record?.number;
+          const groupName = record?.groupName ;
+          const chatId = record?.chat_id;
+          if (!group || !chatId) continue;
+                          const url = constants.routes_Url.getChatAttendies(record.chat_id);
+                          const reqBody = {
+                              method : "get",
+                              url : url ,
+                              headers : unipileHeaders,
+                          }
+          
+                          const groupInfo = await makeRequest(reqBody) ;
+          if(groupInfo?.data){
+            const attendies  = groupInfo?.data?.items;
+            let participants = [];
+            for(let attendie of attendies){
+              participants.push(attendie?.specifics?.phone_number);
+            }
+            participants = participants.map(n => String(n).replace(/^\+/, ""));
+            participants = participants.filter(n => n !== userSession?.number);
+            const uniqueParticipants = [...new Set(participants)];
+           console.log(`Unique participants for group ${group} are ${uniqueParticipants}`);
           const availableNumbers = await CheckAvailableNumbers(
-            userSession.sessionId,
+            sessionId,
             "",
             "",
-            participantNumber,
+            uniqueParticipants,
             'pending',
             group,
             groupName
@@ -86,7 +104,7 @@ export async function updateCheckNumber(req, res) {
           const newGroupId = availableNumbers?.responseFromSFForNumCheck?.data?.GroupId;
           console.log(` new SF GroupId for ${group}: ${newGroupId}, existing: ${record.sf_groupId}`);
           if ((newGroupId == undefined && record.sf_groupId !== null) || (newGroupId !== undefined && record.sf_groupId == null)) {
-            await bulkUpdateGroup(orgId, group, newGroupId, groupName);
+            await updateGroup(sessionId, group, newGroupId, groupName, chatId);
           }
           }
         }
@@ -99,7 +117,7 @@ export async function updateCheckNumber(req, res) {
   }
 
 
-  async function processNumbersWithPagination(sessionId, userSession) {
+  async function processNumbersWithPagination(sessionId) {
     console.log(`Processing numbers for sessionId: ${sessionId}`);
   
     const pageSize = 1000;
@@ -139,20 +157,20 @@ export async function updateCheckNumber(req, res) {
           let checkResult;
           try {
             checkResult = await CheckAvailableNumbers(
-              userSession.sessionId,
+              sessionId,
               "",
               "",
               numbers,
               'pending');
           } catch (error) {
-            console.log(`Error checking available numbers for orgId: ${orgId}`, error.message);
+            console.log(`Error checking available numbers for sessionId: ${sessionId}`, error.message);
             return;
           }
           
           const isAvailableList = checkResult?.responseFromSFForNumCheck?.data?.AvailableNo;
-          console.log(`CheckAvailableNumbers result for orgId ${orgId} and numbers ${JSON.stringify(numbers)}`, isAvailableList);
+          console.log(`CheckAvailableNumbers result for sessionId ${sessionId} and numbers ${JSON.stringify(numbers)}`, isAvailableList);
           if(!Array.isArray(isAvailableList)){
-            console.log(`Invalid response for orgId: ${orgId}, expected an array but got:`, isAvailableList);
+            console.log(`Invalid response for sessionId: ${sessionId}, expected an array but got:`, isAvailableList);
           }
           
     
@@ -166,24 +184,24 @@ export async function updateCheckNumber(req, res) {
             }
           }
         }
-        console.log(`BulkUpdateTrue for orgId ${orgId}:`, BulkUpdateTrue);
-        console.log(`BulkUpdateFalse for orgId ${orgId}:`, BulkUpdateFalse); 
+        console.log(`BulkUpdateTrue for sessionId ${sessionId}:`, BulkUpdateTrue);
+        console.log(`BulkUpdateFalse for sessionId ${sessionId}:`, BulkUpdateFalse); 
         try {
           const chunkSizeForUpdate = 50;
               if (BulkUpdateTrue.length > 0) {
                   for (let k = 0; k < BulkUpdateTrue.length; k += chunkSizeForUpdate) { 
                       const chunkToUpdateTrue = BulkUpdateTrue.slice(k, k + chunkSizeForUpdate);
-                      await bulkUpdateNumbersWithTrue(orgId, chunkToUpdateTrue);
+                      await bulkUpdateNumbersWithTrue(sessionId, chunkToUpdateTrue);
                   }
               }
               if (BulkUpdateFalse.length > 0) {
                   for (let l = 0; l < BulkUpdateFalse.length; l += chunkSizeForUpdate) { 
                       const chunkToUpdateFalse = BulkUpdateFalse.slice(l, l + chunkSizeForUpdate);
-                      await bulkUpdateNumbersWithFalse(orgId, chunkToUpdateFalse);
+                      await bulkUpdateNumbersWithFalse(sessionId, chunkToUpdateFalse);
                   }
               }
           } catch (error) {
-            console.log(`Error updating numbers for orgId: ${orgId}`, error);
+            console.log(`Error updating numbers for sessionId: ${sessionId}`, error);
           }
     }
     } catch (error) {

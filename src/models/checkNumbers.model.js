@@ -1,11 +1,7 @@
 import mongoose from 'mongoose';
 
 const checkNumberSchema = new mongoose.Schema({
-  account_id: {
-    type: String,
-    default: null
-  },
-  sessionId : {
+  sessionId: {
     type: String,
     required: true,
     index: true
@@ -30,8 +26,8 @@ const checkNumberSchema = new mongoose.Schema({
     type: String,
     required: true,
   }
-}, { 
-  timestamps: true 
+}, {
+  timestamps: true
 });
 
 export default mongoose.model('CheckNumber', checkNumberSchema);

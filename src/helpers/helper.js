@@ -131,6 +131,7 @@ export const manageUnipileLogin = async (account_id) => {
           loggedIn: true
         }
       }, { new: true })
+      console.log("user details on login =================", userDetails);
       emitStatus(userDetails.sessionId, { status: 'authenticated', phone: userDetails.number });
       console.log("userDetails on login ========", userDetails);
       await saveUserLogTime(userDetails.sessionId, true);
