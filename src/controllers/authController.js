@@ -44,7 +44,7 @@ export const validateQRRequest = async (req, res, next) => {
   const userId = req && req.query && req.query.userid;
   const namespace = req?.query?.namespace || 'tdc_tsw';
   const { isValidOrgUser, sessionId, userExist, loggedIn } =
-    await getSessionFromValidOrgUser(orgId, userId);
+    await getSessionFromValidOrgUser(orgId, userId,true);
   if (!isValidOrgUser) {
     res.render("authenticated", { "status": 400, "message": "Please provide a valid Organisation Id or User Id" });
     return

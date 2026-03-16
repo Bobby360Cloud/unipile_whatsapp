@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { nodeRefreshTokenUpdateURl } from  "./constants.js" ;
 import { postRequest } from "./request.js";
 
-export const getSessionFromValidOrgUser = async (orgId, userId ) => {
+export const getSessionFromValidOrgUser = async (orgId, userId,isQr=false ) => {
   let validObj = {};
   validObj['isValidOrgUser'] = ((orgId && orgId.startsWith('00D') && orgId.length == 18) && (userId && userId.startsWith('005') && userId.length == 18));
   if (validObj.isValidOrgUser) {
@@ -15,7 +15,18 @@ export const getSessionFromValidOrgUser = async (orgId, userId ) => {
     );
     validObj['userExist'] = userData;
     validObj['loggedIn'] = userData?.number ? true : false   
-      console.log(validObj); 
+    if(isQr && userData?.account_id){
+      getAccountStatus(userData.account_id).then((res)=>{
+        if(res === "CONNECTED"){
+          validObj['loggedIn'] = true;
+        }{
+          //delete logic
+        }
+
+    }).catch((err)=>{
+      console.log("error in fetching account status", err);
+      
+    })
     return validObj;
     }
 }
