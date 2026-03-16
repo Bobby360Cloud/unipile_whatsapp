@@ -6,6 +6,7 @@ import { getQr , validateQRRequest, webhook, validateRequest, checkSession, chec
 import {deleteMsgToWhatsapp, msgWebhook , sendMsgFunc} from '../controllers/messageController.js';
 import { createGroup, groupActivate, addRemoveParticipants } from '../controllers/groupController.js';
 import { authValidator } from '../helpers/validator.js';
+import { updateCheckNumber } from '../controllers/index.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.get("/activategroup",authValidator, groupActivate);
 
 
 
-// router.get("/updateNumAvailability",authValidator, updateCheckNumber); //ok tested 
+router.get("/updateNumAvailability",authValidator, updateCheckNumber); //ok tested 
 
 //one to one message apis
 router.post('/sendMessage',authValidator, validateRequest, sendMsgFunc);
