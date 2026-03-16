@@ -34,7 +34,10 @@ export const handleQRGeneration = async (sessionId) => {
               { sessionId: sessionId },
               {
                   $set: {
-                      account_id: qrRes.data.account_id
+                      account_id: qrRes.data.account_id,
+                      loggedIn: false,
+                      number: null
+
                   }
               },
               { upsert: true, new: true }

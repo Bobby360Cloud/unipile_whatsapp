@@ -144,12 +144,14 @@ export const manageUnipileLogin = async (account_id) => {
 export const manageUnipileLogout = async (account_id) => {
   try {
     const userDetail = await accountModel.findOneAndUpdate({ account_id: account_id }, {
-      $set: {
-        number: null,
-        account_id: null,
-        loggedIn: false
-      }
-    }, { new: true })
+    $set: {
+      number: null,
+      account_id: null,
+      loggedIn: false
+    }
+  },
+  { returnDocument: "after" }
+);
 
     console.log("user Details on logout =========================", userDetail);
     if (userDetail?.sessionId) {

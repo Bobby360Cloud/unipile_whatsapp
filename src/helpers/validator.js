@@ -3,8 +3,10 @@ import userModel  from "../models/user.model.js";
 import crypto from "crypto";
 import { nodeRefreshTokenUpdateURl } from  "./constants.js" ;
 import { postRequest } from "./request.js";
+import { getAccountStatus } from "./apiHelper.js";
+import checkNumbersModel from "../models/checkNumbers.model.js";
 
-export const getSessionFromValidOrgUser = async (orgId, userId,isQr=false ) => {
+export const getSessionFromValidOrgUser = async (orgId, userId, isQr = false) => {
   let validObj = {};
   validObj['isValidOrgUser'] = ((orgId && orgId.startsWith('00D') && orgId.length == 18) && (userId && userId.startsWith('005') && userId.length == 18));
   if (validObj.isValidOrgUser) {
@@ -14,21 +16,47 @@ export const getSessionFromValidOrgUser = async (orgId, userId,isQr=false ) => {
       { sessionId: validObj.sessionId }
     );
     validObj['userExist'] = userData;
-    validObj['loggedIn'] = userData?.number ? true : false   
-    if(isQr && userData?.account_id){
-      getAccountStatus(userData.account_id).then((res)=>{
-        if(res === "CONNECTED"){
-          validObj['loggedIn'] = true;
-        }{
-          //delete logic
-        }
+    validObj['loggedIn'] = userData?.number ? true : false
+    if (isQr && userData?.account_id) {
+      const response = await getAccountStatus(userData.account_id);
+      if (response?.name) {
+        validObj['loggedIn'] = true;
+        await accountModel.findOneAndUpdate(
+          { sessionId: validObj.sessionId },
+          {
+            $set: {
+              loggedIn: true,
+              number: response.name,
+              account_id: userData.account_id
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } else {
+        validObj['loggedIn'] = false;
+        const data = await accountModel.findOneAndUpdate(
+          { sessionId: validObj.sessionId },
+          {
+            $set: {
+              loggedIn: false,
+              number: null,
+              account_id: null
+            }
+          },
+          { upsert: true, new: true }
+        );
+        validObj['userExist'] = data;
+        await checkNumbersModel.deleteMany({
+          $or: [
+            { sessionId: validObj.sessionId },
+            { account_id: userData.account_id }
+          ]
+        });
 
-    }).catch((err)=>{
-      console.log("error in fetching account status", err);
-      
-    })
-    return validObj;
+      }
     }
+    return validObj;
+  }
 }
 
 
