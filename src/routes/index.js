@@ -1,17 +1,26 @@
 import express from 'express';
-import { getQr , validateQRRequest, webhook, validateRequest, checkSession, checkOrgUserStatus} from '../controllers/authController.js';
-
-
-import {deleteMsgToWhatsapp, msgWebhook , sendMsgFunc} from '../controllers/messageController.js';
-import { createGroup, groupActivate, addRemoveParticipants } from '../controllers/groupController.js';
-import { updateCheckNumber } from '../controllers/index.js';
+import {
+  getQr,
+  validateQRRequest,
+  accountWebhook,
+  validateRequest,
+  checkSession,
+  checkOrgUserStatus,
+  deleteMsgToWhatsapp,
+  msgWebhook,
+  sendMsgFunc,
+  createGroup,
+  groupActivate,
+  addRemoveParticipants,
+  updateCheckNumber,
+} from '../controllers/index.controller.js';
 
 const router = express.Router();
 
 
 
 router.get('/qr',validateQRRequest, getQr);
-router.post('/webhook', webhook); //ok tested 
+router.post('/webhook', accountWebhook); //ok tested 
 router.post('/msg/webhook', msgWebhook);  //ok tested 
 
 

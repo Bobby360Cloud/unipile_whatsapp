@@ -1,11 +1,10 @@
 import mime from "mime-types";
 import { getMessageTime, getNumAvailability, isGroupSupported } from "./helper.js"
 import consts, { sf_LoginURL, querySF, authAppURL } from "./constants.js";
-import userModel from "../models/user.model.js";
-import checkNumbersModel from "../models/checkNumbers.model.js";
+import { userModel } from "../models/index.model.js";
 import makeRequest, { getRequest, postRequest, patchRequest, formDataRequest } from "./request.js";
 // import { sendMsgToWhatsapp } from "../../controllers/messageController.js";
-import { bulkUpdateNumbersWithFalse, bulkUpdateNumbersWithTrue, numberUpdateWithFalse, numberUpdateWithTrue } from "./dbhelper.js";
+import { numberUpdateWithFalse, numberUpdateWithTrue } from "./dbhelper.js";
 import { Readable } from 'stream';
 import FormData from 'form-data';
 

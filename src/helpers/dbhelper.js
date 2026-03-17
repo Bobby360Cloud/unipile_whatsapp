@@ -1,5 +1,5 @@
 
-import checkNumbersModel from "../models/checkNumbers.model";
+import { checkNumbersModel } from "../models/index.model.js";
 
 
 

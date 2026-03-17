@@ -1,45 +1,16 @@
-import { UnipileClient } from 'unipile-node-sdk';
-import config from '../configs/config';
-import { deliveryParser, editMessageParser, groupMessageParser, oneToOneMessageParser } from '../helpers/messageParser';
-import constants, { unipileHeaders, sessionIncomingOutgoing } from '../helpers/constants';
-import makeRequest from '../helpers/request';
-import checkNumbersModel from '../models/checkNumbers.model';
-import fs from 'fs';
-import { numberUpdateWithTrue } from '../helpers/dbhelper';
+
+import {
+  constants,
+  unipileHeaders,
+  sessionIncomingOutgoing,
+  makeRequest,
+  numberUpdateWithTrue,
+} from '../helpers/index.helper.js';
+import { checkNumbersModel } from '../models/index.model.js';
 import https from 'https';
 
-export async function msgWebhook(req, res) {
-  const message = req?.body;
-  if (message.account_type !== 'WHATSAPP') return res.status(200).send('Webhook received');
-  if (message && message.account_type === 'WHATSAPP' && message.is_group === false && message?.event === 'message_received') {
-    console.log("Webhook received: for one to one messages ", message?.account_id, message?.message_id);
-    // console.log("Full request body: for edit messages ", JSON.stringify(req.body, null, 2));
-    await oneToOneMessageParser(message);
-  } else if (message && message.account_type === 'WHATSAPP' && message.is_group === true && message?.event === 'message_received') {
-    console.log("Webhook received: for group messages ", message?.account_id, message?.message_id);
-    // console.log("Full request body: for edit messages ", JSON.stringify(req.body, null, 2));
-    await groupMessageParser(message);
-  } else if (message && message.account_type === 'WHATSAPP' && message?.event === 'message_edited') {
-    console.log("Webhook received: for edit messages ", message?.account_id, message?.message_id);
-    // console.log("Full request body: for edit messages ", JSON.stringify(req.body, null, 2));
-    await editMessageParser(message);
-  } else if (message && message.account_type === 'WHATSAPP' && (message?.event === 'message_read' || message?.event === 'message_delivered')) {
-    console.log("Webhook received: for read messages ", message?.account_id, message?.message_id);
-    // console.log("Full request body: for deliivery ", JSON.stringify(req.body, null, 2));
-    await deliveryParser(message);
 
-  } else if (message && message.account_type === 'WHATSAPP' && message?.event === 'message_deleted') {
-    console.log("Webhook received: for delete msg", message?.account_id, message?.message_id);
-    // console.log("Full request body: for delete msg", JSON.stringify(req.body, null, 2));
-  }
-  else if (message && message.account_type === 'WHATSAPP') {
-    console.log("Webhook received: for other messages ", message?.account_id, message?.message_id);
-    // console.log("Full request body: for other messages ", JSON.stringify(req.body, null, 2));
-  }
-  res.status(200).send('Webhook received');
-}
 
-const client = new UnipileClient(`https://${config.UNIPILE_DSN}`, `${config.UNIPILE_API_KEY}`);
 export async function sendMsgFunc(req, res) {
   try {
 

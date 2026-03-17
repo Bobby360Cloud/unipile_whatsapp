@@ -1,11 +1,10 @@
-import userModel from "../models/user.model";
+import { accountModel } from "../models/index.model.js";
 import constants, { createMessageObj, unipileHeaders, sessionIncomingOutgoing } from "./constants";
 import { updateGroup } from "./dbhelper";
 import { getGroupAvailability, getGroupName, isGroupSupported } from "./helper";
 import makeRequest from "./request";
 import { CheckAvailableNumbers, sendDelivery, sendEditedIncomingToSF, sendGroupMessageToSF, sendMobIncomingOutgoingMsgToSF } from "./sfhelper";
-import FileType, { fileTypeFromBuffer } from "file-type";
-import accountModel from "../models/account.model";
+import FileType from "file-type";
 
 
 export const oneToOneMessageParser = async (message) => {

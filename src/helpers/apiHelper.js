@@ -2,8 +2,7 @@ import QRCode from 'qrcode';
 import {makeRequest} from "./request"
 import constants,{unipileHeaders} from "./constants"
 import { emitStatus } from "../configs/socketconfig"
-import userModel from '../models/user.model';
-import accountModel from '../models/account.model';
+import {accountModel } from '../models/index.model.js';
 import config from '../configs/config';
 
 export const handleQRGeneration = async (sessionId) => { 

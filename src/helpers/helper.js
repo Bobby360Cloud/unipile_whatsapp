@@ -1,10 +1,8 @@
-import userModel from "../models/user.model";
-import checkNumbersModel from "../models/checkNumbers.model";
+import { userModel, checkNumbersModel, accountModel } from "../models/index.model.js";
 import { updateSFUserLogTime } from "./sfhelper";
 import constants, { unipileHeaders } from "./constants";
 import makeRequest from "./request";
 import { emitStatus } from "../configs/socketconfig";
-import accountModel from "../models/account.model";
 
 export const getMessageTime = (time) => {
   console.log("time.................", time);

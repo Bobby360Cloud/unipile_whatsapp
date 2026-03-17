@@ -27,7 +27,7 @@ const checkNumberSchema = new mongoose.Schema({
     required: true,
   }
 }, {
-  timestamps: true
-});
+        timestamps: { createdAt: 'createdat', updatedAt: 'updatedat' },
+    });
 
 export default mongoose.model('CheckNumber', checkNumberSchema);

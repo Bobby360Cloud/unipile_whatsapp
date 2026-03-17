@@ -17,8 +17,8 @@ const AccountSchema = new mongoose.Schema({
   },
   loggedIn:{type:Boolean, default: false}
  
-}, { 
-  timestamps: true 
-});
+},{
+        timestamps: { createdAt: 'createdat', updatedAt: 'updatedat' },
+    });
 
 export default mongoose.model('Account', AccountSchema);

@@ -1,10 +1,8 @@
-import accountModel from "../models/account.model.js";
-import userModel  from "../models/user.model.js";
+import { accountModel, userModel, checkNumbersModel } from "../models/index.model.js";
 import crypto from "crypto";
 import { nodeRefreshTokenUpdateURl } from  "./constants.js" ;
 import { postRequest } from "./request.js";
 import { getAccountStatus } from "./apiHelper.js";
-import checkNumbersModel from "../models/checkNumbers.model.js";
 
 export const getSessionFromValidOrgUser = async (orgId, userId, isQr = false) => {
   let validObj = {};

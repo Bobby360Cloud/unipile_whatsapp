@@ -1,8 +1,10 @@
-import { isGroupSupported } from '../helpers/helper';
-import userModel from '../models/user.model';
-import constants, { unipileHeaders } from '../helpers/constants';
-import checkNumbersModel from '../models/checkNumbers.model';
-import makeRequest from '../helpers/request';
+import {
+  isGroupSupported,
+  constants,
+  unipileHeaders,
+  makeRequest,
+} from '../helpers/index.helper.js';
+import { userModel, checkNumbersModel } from '../models/index.model.js';
 
 export const groupActivate = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import http from "http";
 import { Server } from "socket.io";
-import { handleQRGeneration } from "../helpers/apiHelper";
+import { handleQRGeneration } from "../helpers/index.helper.js";
 
 const userSocketMap = {};
 
