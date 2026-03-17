@@ -17,6 +17,7 @@ import {
   sendMsgFunc,
   sendMsgToWhatsapp,
   deleteMsgToWhatsapp,
+  sendEditMsgToWhatsapp
 } from './message.controller.js';
 
 import {
@@ -39,4 +40,5 @@ export {
   deleteMsgToWhatsapp,
   accountWebhook,
   msgWebhook,
+  sendEditMsgToWhatsapp
 };

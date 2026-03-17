@@ -23,6 +23,7 @@ export async function accountWebhook(req, res) {
 
 export async function msgWebhook(req, res) {
   const message = req?.body;
+  console.log("Message Webhook received:", message);
   if (message.account_type !== 'WHATSAPP') return res.status(200).send('Webhook received');
   if (message && message.account_type === 'WHATSAPP' && message.is_group === false && message?.event === 'message_received') {
     console.log("Webhook received: for one to one messages ", message?.account_id, message?.message_id);

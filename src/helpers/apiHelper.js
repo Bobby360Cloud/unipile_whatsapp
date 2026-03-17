@@ -7,6 +7,11 @@ import config from '../configs/config';
 
 export const handleQRGeneration = async (sessionId) => { 
     try {
+      let isLoggedIn = await accountModel.findOne({ sessionId: sessionId, loggedIn: true });
+      if (isLoggedIn) {
+        console.log(`Session ${sessionId} is already logged in. Skipping QR generation.`);
+        return;
+      }
       const url = constants.routes_Url.getQr
       const reqData = {
           method: 'post',

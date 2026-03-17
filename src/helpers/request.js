@@ -18,9 +18,10 @@ export async function makeRequest(req) {
         }
         if(method=='post' || method=='patch') config['data']=data || {};
         let response = await axios(config);
+        //console.log(`Response from ${url}:`, response);
         return response;
     } catch (error) {
-        console.error('Error making request:', error.message);
+        console.error('Error making request:', error);
         if (error.response) {
             console.error('Response error:', error.response.data); // Log server response
         } else if (error.request) {

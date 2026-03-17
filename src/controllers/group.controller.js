@@ -80,28 +80,32 @@ export const createGroup = async (req, res) => {
         url: getChatInfoUrl,
         headers: unipileHeaders
       }
+       return res.json({
+          status: 200,
+          message: "Group created successfully",
+          groupId: createGroup.data.chat_id
+        })
       const groupInfo = await makeRequest(reqData);
-      if (groupInfo?.data?.id) {
-        const groupId = groupInfo.data.id
-        return {
+      if (groupInfo?.data?.chat_id) {
+        const groupId = groupInfo.data.chat_id;
+        return res.json({
           status: 200,
           message: "Group created successfully",
           groupId: groupId
-        }
-
+        })
 
       } else {
-        return {
+        return res.json({
           status: 503,
           message: "Something went wrong.Could not fetch group info",
-        }
+        })
 
       }
     } else {
-      return {
+      return res.json({
         status: 500,
         message: "Group creation failed",
-      }
+      });
     }
 
     return {
@@ -118,7 +122,7 @@ export const createGroup = async (req, res) => {
 
 export const addRemoveParticipants = async (req, res) => {
   try {
-    const { groupId, participants } = req.body;
+    const { groupId, participants,action } = req.body;
     const sessionId = req.body.sessionId;
     // Validate groupId
     if (!groupId || !groupId.endsWith("@g.us")) {
@@ -152,7 +156,7 @@ export const addRemoveParticipants = async (req, res) => {
           url: url,
           headers: unipileHeaders,
           data: {
-            "action": "addParticipant",
+            "action": action == "add" ? "addParticipant" : "removeParticipant",
             "value": uniqueParticipants[i] + "@s.whatsapp.net"
           }
         }

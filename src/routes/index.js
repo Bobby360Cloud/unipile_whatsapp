@@ -13,6 +13,7 @@ import {
   groupActivate,
   addRemoveParticipants,
   updateCheckNumber,
+  sendEditMsgToWhatsapp
 } from '../controllers/index.controller.js';
 
 const router = express.Router();
@@ -31,6 +32,8 @@ router.get("/updateNumAvailability", updateCheckNumber); //ok tested
 
 router.post('/sendMessage', validateRequest, sendMsgFunc);
 router.delete("/deleteMessage",validateRequest, deleteMsgToWhatsapp); 
+
+router.post("/editMessage", validateRequest, sendEditMsgToWhatsapp); 
 
 //group apis
 router.post('/createGroup', validateRequest, createGroup); 

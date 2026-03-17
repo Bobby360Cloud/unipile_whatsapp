@@ -257,6 +257,23 @@ const getFileData = async (fileurl, message) => {
   return data;
 };
 
+export const sendEditMsgToWhatsapp = async (req, res) => {
+  try {
+    const { sessionId,message,messageId } = req.body;
+    const account_id = req.body.userExist.account_id;  
+    let res= await makeRequest({
+      method: "patch",
+      url: constants.routes_Url.getMessageUrl(messageId),
+      data: {text:message},
+      headers: unipileHeaders
+    })
+    return res?.data ? res.json({ status: 200, message: "Message edited successfully", messageId: messageId }) : res.json({ status: 400, message: "Error in editing message" });
+  } catch (error) {
+    console.log("Error in sendEditMsgToWhatsapp", error);
+    return res.json({ status: 400, message: "Error in editing message" });
+  }
+}
+
 
 
 
