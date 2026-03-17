@@ -49,7 +49,7 @@ export const oneToOneMessageParser = async (message) => {
       fromMe,
       fromNumber,
       toNumber,
-      message?.quoted?.provider_id || "",
+      message?.quoted?.message_id || "",
       accountId,
       chatId
     );
@@ -182,7 +182,7 @@ export const groupMessageParser = async (message) => {
       fromNumber,
       participants,
       groupId,
-      message?.quoted?.provider_id || "",
+      message?.quoted?.message_id || "",
       sfGroupId,
       groupName,
       chatId
@@ -294,7 +294,7 @@ export const editMessageParser = async (message) => {
         fromMe,
         fromNumber,
         toNumber,
-        message?.quoted?.provider_id || "",
+        message?.quoted?.message_id || "",
         accountId,
         chatId
       );
@@ -356,7 +356,7 @@ export const editMessageParser = async (message) => {
         fromNumber,
         participants,
         groupId,
-        message?.quoted?.provider_id || "",
+        message?.quoted?.message_id || "",
         sfGroupId,
         groupName,
         chatId
