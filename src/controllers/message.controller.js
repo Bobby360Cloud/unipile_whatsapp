@@ -140,6 +140,9 @@ export const sendMsgToWhatsapp = async (sessionId, number, messages, media, cont
       chatId = sendMesg.data.chat_id;
       await checkNumbersModel.findOneAndUpdate({ sessionId: sessionId, number: number }, { chat_id: chatId,isAvailable: true }, { upsert: true, new: true });
     }
+    else if(!number?.endsWith("@g.us") && chat_id){
+      await numberUpdateWithTrue(sessionId, number ,chat_id );
+    }
     if (sendMesg?.data?.message_id && attendies_ids?.endsWith("@s.whatsapp.net")) {
       sessionIncomingOutgoing.set(sendMesg?.data?.message_id, true);
       setTimeout(() => {
@@ -259,13 +262,18 @@ export const sendEditMsgToWhatsapp = async (req, res) => {
   try {
     const { sessionId,message,messageId } = req.body;
     const account_id = req.body.userExist.account_id;  
-    let res= await makeRequest({
+    let response= await makeRequest({
       method: "patch",
       url: constants.routes_Url.getMessageUrl(messageId),
       data: {text:message},
       headers: unipileHeaders
     })
-    return res?.data ? res.json({ status: 200, message: "Message edited successfully", messageId: messageId }) : res.json({ status: 400, message: "Error in editing message" });
+
+    sessionIncomingOutgoing.set(messageId, true);
+      setTimeout(() => {
+        sessionIncomingOutgoing.delete(messageId);
+      }, 5000);
+    return response?.data ? res.json({ status: 200, message: "Message edited successfully", messageId: messageId }) : res.json({ status: 400, message: "Error in editing message" });
   } catch (error) {
     console.log("Error in sendEditMsgToWhatsapp", error);
     return res.json({ status: 400, message: "Error in editing message" });

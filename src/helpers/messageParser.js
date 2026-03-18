@@ -154,7 +154,19 @@ export const groupMessageParser = async (message) => {
       participants = phoneNumbers?.map(
         number => number.startsWith("+") ? number.slice(1) : number
       );
-      console.log(participants);
+      console.log("participants",participants);
+      if (participants.length === 0) {
+        console.log("No participants found for the group message. trying to fetch details using api call and then process the message");
+        const url = constants.routes_Url.getChatAttendies(chatId);
+        const reqData = {
+          method: 'get',
+          url: url,
+          headers: unipileHeaders
+        }
+        const groupDetails = await makeRequest(reqData);
+        console.log("group details response =================", groupDetails?.data);
+      }
+
     } else if (isGroupAvailable) {
       sfGroupId = isGroupAvailable;
 
@@ -167,11 +179,11 @@ export const groupMessageParser = async (message) => {
           number => number !== message?.account_info?.phone_number
         );
 
-        console.log(phoneNumbers);
+        console.log("phoneNumbers", phoneNumbers);
         participants = phoneNumbers?.map(
           number => number.startsWith("+") ? number.slice(1) : number
         );
-        console.log(participants);
+        console.log("participants", participants);
       }
     } else {
       return;
@@ -259,6 +271,7 @@ export const groupMessageParser = async (message) => {
 
 export const editMessageParser = async (message) => {
   try {
+     if (sessionIncomingOutgoing.has(message?.message_id)) return
     const accountId = message?.account_id;
     if (!accountId) return;
     const userRec = await accountModel.findOne({ account_id: accountId });
