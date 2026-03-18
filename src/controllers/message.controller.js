@@ -136,7 +136,7 @@ export const sendMsgToWhatsapp = async (sessionId, number, messages, media, cont
     let sendMesg = await makeRequest(req);
 
     console.log("send Message to Whatsapp response", sendMesg.data);
-    if (sendMesg?.data?.chat_id && !chat_id) {
+    if (sendMesg?.data?.chat_id && !chat_id && !number?.endsWith("@g.us")) {
       chatId = sendMesg.data.chat_id;
       await checkNumbersModel.findOneAndUpdate({ sessionId: sessionId, number: number }, { chat_id: chatId,isAvailable: true }, { upsert: true, new: true });
     }
@@ -145,8 +145,6 @@ export const sendMsgToWhatsapp = async (sessionId, number, messages, media, cont
       setTimeout(() => {
         sessionIncomingOutgoing.delete(sendMesg?.data?.message_id);
       }, 5000);
-      let num = number.replace(/\D/g, "");
-      await numberUpdateWithTrue(sessionId, num, chatId);
       return {
         status: 200,
         message: `Message successfully sent to ${number}`,
