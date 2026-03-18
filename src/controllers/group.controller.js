@@ -3,6 +3,7 @@ import {
   constants,
   unipileHeaders,
   makeRequest,
+  getRequest
 } from '../helpers/index.helper.js';
 import { userModel, checkNumbersModel } from '../models/index.model.js';
 
@@ -80,14 +81,15 @@ export const createGroup = async (req, res) => {
         url: getChatInfoUrl,
         headers: unipileHeaders
       }
-       return res.json({
-          status: 200,
-          message: "Group created successfully",
-          groupId: createGroup.data.chat_id
-        })
-      const groupInfo = await makeRequest(reqData);
-      if (groupInfo?.data?.chat_id) {
-        const groupId = groupInfo.data.chat_id;
+      //  return res.json({
+      //     status: 200,
+      //     message: "Group created successfully",
+      //     groupId: createGroup.data.chat_id
+      //   })
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      const groupInfo = await getRequest(unipileHeaders, getChatInfoUrl);
+      if (groupInfo?.data?.provider_id) {
+        const groupId = groupInfo.data.provider_id;
         return res.json({
           status: 200,
           message: "Group created successfully",

@@ -104,7 +104,7 @@ export const getGroupName = async (sessionId, groupid) => {
 
 export const getGroupAvailability = async (sessionId, number) => {
   const record = await checkNumbersModel.findOne({ sessionId: sessionId, number });
-  if (!record) {
+  if (!record || !record?.sf_groupId) {
     // If the record does not exist in the database
     return "NOT_EXIST";
   }

@@ -36,20 +36,19 @@ export async function makeRequest(req) {
 
 
 
-export const getRequest = async function (headers, url) {
-
-    const resp = await axios({
-        headers,
-        method: "get",
-        url: url
-    })
-        .then(function (response) {
-            return response;
-        })
-        .catch(function (error) {
-            return error;
-        });
+export const getRequest = async function (headers, url,chat_id) {
+try{
+    console.log(`Making GET request to ${url} with headers:`, headers);
+    const resp = await axios.get(url, {
+        headers
+     });
+    console.log(`GET request to ${url} successful:`, resp.data);
     return resp;
+
+}catch(error){
+    console.error('Error in getRequest:', error);
+    return error;
+}
 };
 
 export const postRequest = async function (headers, url, data = {}) {

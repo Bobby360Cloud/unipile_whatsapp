@@ -138,7 +138,7 @@ export const sendMsgToWhatsapp = async (sessionId, number, messages, media, cont
     console.log("send Message to Whatsapp response", sendMesg.data);
     if (sendMesg?.data?.chat_id && !chat_id) {
       chatId = sendMesg.data.chat_id;
-      await checkNumbersModel.findOneAndUpdate({ sessionId: sessionId, number: number }, { chat_id: chatId }, { upsert: true, new: true });
+      await checkNumbersModel.findOneAndUpdate({ sessionId: sessionId, number: number }, { chat_id: chatId,isAvailable: true }, { upsert: true, new: true });
     }
     if (sendMesg?.data?.message_id && attendies_ids?.endsWith("@s.whatsapp.net")) {
       sessionIncomingOutgoing.set(sendMesg?.data?.message_id, true);
