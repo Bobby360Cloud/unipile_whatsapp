@@ -1,17 +1,16 @@
 import mime from "mime-types";
 import { getMessageTime, getNumAvailability, isGroupSupported } from "./helper.js"
-import consts, { sf_LoginURL , querySF, authAppURL } from "./constants.js";
-import userModel from "../models/user.model.js";
-import checkNumbersModel from "../models/checkNumbers.model.js";
-import makeRequest, { getRequest, postRequest ,patchRequest, formDataRequest } from "./request.js";
+import consts, { sf_LoginURL, querySF, authAppURL } from "./constants.js";
+import { userModel } from "../models/index.model.js";
+import makeRequest, { getRequest, postRequest, patchRequest, formDataRequest } from "./request.js";
 // import { sendMsgToWhatsapp } from "../../controllers/messageController.js";
-import { bulkUpdateNumbersWithFalse, bulkUpdateNumbersWithTrue, numberUpdateWithFalse, numberUpdateWithTrue } from "./dbhelper.js";
+import { numberUpdateWithFalse, numberUpdateWithTrue } from "./dbhelper.js";
 import { Readable } from 'stream';
 import FormData from 'form-data';
 
 import { encryptString, getOrgString } from "./validator.js";
 
-const {routes_Url} = consts;
+const { routes_Url } = consts;
 
 
 export async function sendSFPendingRec(sessionId, needFromSf = false) {
@@ -117,7 +116,7 @@ export async function sendSFPendingRec(sessionId, needFromSf = false) {
                   fileUrls = JSON.parse(fileUrls);
                   fileUrls = Object.values(fileUrls);
                   fileUrls = fileUrls[0]
-                  if(fileUrls){
+                  if (fileUrls) {
                     fileUrls = fileUrls?.downloadUrl;
                   }
                 }
@@ -126,10 +125,10 @@ export async function sendSFPendingRec(sessionId, needFromSf = false) {
               }
 
               number = number.replace(/\D/g, '');
-              
+
               if (number && !SFgroupChat) {
                 if (record?.tdc_tsw__ContextId__c) {
-                    context_message_id = record?.tdc_tsw__ContextId__c;
+                  context_message_id = record?.tdc_tsw__ContextId__c;
                 }
                 if (fileUrls) {
                   const urls = fileUrls.match(/https?:\/\/[^\s"]+/g);
@@ -167,7 +166,7 @@ export async function sendSFPendingRec(sessionId, needFromSf = false) {
                     });
                   }
                 } else {
-                  const sentMsg = await sendMsgToWhatsapp(sessionId,number,message,"",context_message_id);
+                  const sentMsg = await sendMsgToWhatsapp(sessionId, number, message, "", context_message_id);
                   if (sentMsg && sentMsg?.messageId) {
                     updateObj = {
                       tdc_tsw__MessageId__c: sentMsg?.messageId,
@@ -217,7 +216,7 @@ export async function sendSFPendingRec(sessionId, needFromSf = false) {
                 }
                 if (groupId && shouldSend === true) {
                   if (record?.tdc_tsw__ContextId__c) {
-                      context_message_id = record?.tdc_tsw__ContextId__c;
+                    context_message_id = record?.tdc_tsw__ContextId__c;
                   }
                   console.log("groupId---", groupId);
                   if (fileUrls) {
@@ -331,7 +330,7 @@ export async function CheckAvailableNumbers(
         sessionId,
         needFromSf
       );
-      const userSessionData = await userModel.findOne({sessionId });
+      const userSessionData = await userModel.findOne({ sessionId });
       const namespace = userSessionData?.custom_namespace || 'tdc_tsw';
       let instanceUrl, accessToken;
       if (getAccessAndInstance?.responseFromSFForAccessToken && getAccessAndInstance?.responseFromSFForAccessToken?.data && getAccessAndInstance?.responseFromSFForAccessToken.data.instance_url && getAccessAndInstance?.responseFromSFForAccessToken.data.access_token) {
@@ -348,7 +347,7 @@ export async function CheckAvailableNumbers(
 
         if (groupId) {
           CheckAvailableNumbersObj["groupId"] = groupId;
-          if(groupName) CheckAvailableNumbersObj["groupName"] = groupName;
+          if (groupName) CheckAvailableNumbersObj["groupName"] = groupName;
           CheckAvailableNumbersObj.CheckAvailableNumbers = checkNumber
         }
 
@@ -430,7 +429,7 @@ async function callSFApi(sessionId, url, headers, data, method) {
 export async function getConnectToSf(sessionId, needFromSf = false) {
   try {
     let recordForUserSession = await userModel.findOne({ sessionId });
-    console.log("recordForUserSession",recordForUserSession);
+    console.log("recordForUserSession", recordForUserSession);
     if (
       !needFromSf &&
       recordForUserSession &&
@@ -449,24 +448,24 @@ export async function getConnectToSf(sessionId, needFromSf = false) {
     }
 
 
-      let orgId = recordForUserSession?.orgId;
+    let orgId = recordForUserSession?.orgId;
 
-      if (orgId) {
-        const nodeAPPUrl = process.env.NODE_AUTHAPP_URL;
+    if (orgId) {
+      const nodeAPPUrl = process.env.NODE_AUTHAPP_URL;
 
-      const SF_url = authAppURL(nodeAPPUrl, orgId,needFromSf);
+      const SF_url = authAppURL(nodeAPPUrl, orgId, needFromSf);
       const orgString = getOrgString(orgId);
       const token = encryptString(orgString);
 
 
       const headers = {
         "content-type": "application/json",
-        "Authorization":`Bearer ${token}`
+        "Authorization": `Bearer ${token}`
       };
 
       console.log("SF_url in the getConnectToSf", SF_url);
 
-      const responseFromSFForAccessToken = await getRequest(headers ,SF_url)
+      const responseFromSFForAccessToken = await getRequest(headers, SF_url)
 
       console.log(
         "responseFromSFForAccessToken/.......................",
@@ -476,19 +475,19 @@ export async function getConnectToSf(sessionId, needFromSf = false) {
       if (responseFromSFForAccessToken?.data?.data?.instance_url && responseFromSFForAccessToken?.data?.data?.access_token) {
         await userModel.updateOne({
           sessionId: sessionId
-        }, { sf_instanceUrl: responseFromSFForAccessToken?.data?.data?.instance_url , sf_accessToken: responseFromSFForAccessToken?.data?.data?.access_token , sf_refreshToken: responseFromSFForAccessToken?.data?.refreshToken }).then(data => {
+        }, { sf_instanceUrl: responseFromSFForAccessToken?.data?.data?.instance_url, sf_accessToken: responseFromSFForAccessToken?.data?.data?.access_token, sf_refreshToken: responseFromSFForAccessToken?.data?.refreshToken }).then(data => {
         }).catch(err => {
           console.log("err in update of usersessionids in the getConnectToSf", err);
         });
       } else {
       }
       let respobj = {
-        responseFromSFForAccessToken : responseFromSFForAccessToken?.data,
+        responseFromSFForAccessToken: responseFromSFForAccessToken?.data,
         userId: recordForUserSession?.userId,
       }
       console.log("respObj================", respobj);
       return {
-        responseFromSFForAccessToken : responseFromSFForAccessToken?.data,
+        responseFromSFForAccessToken: responseFromSFForAccessToken?.data,
         userId: recordForUserSession?.userId,
       };
     } else {
@@ -506,7 +505,7 @@ export async function getConnectToSf(sessionId, needFromSf = false) {
 
 export const sendMobIncomingOutgoingMsgToSF = async (message) => {
   try {
-    if(!message || !message.sessionId || !message.messageId){
+    if (!message || !message.sessionId || !message.messageId) {
       return;
     }
 
@@ -523,8 +522,8 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
       );
       if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
         await numberUpdateWithTrue(message.sessionId, num, message.chatId)
-      }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await numberUpdateWithFalse(message.sessionId, num, message.chatId );
+      } else if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length == 0)
+        await numberUpdateWithFalse(message.sessionId, num, message.chatId);
     } else if (isNumExist) {
       console.log("Number is already available in our db", num);
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
@@ -534,7 +533,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
         userId: responseFromGetConnentToSf?.userId
       };
-    }  
+    }
 
     console.log("availableNumbers -------------", availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
 
@@ -558,6 +557,9 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         let ContentDocumentId, name, nameID;
         // 
         if (message?.mimetype && message?.image) {
+          if (message?.mimetype === "audio/opus") {
+            message.mimetype = "audio/ogg";
+          }
           const contentVersion = await getcontentVersionId(message, accessToken, instanceUrl);
           console.log("contentVersion---", contentVersion);
           ContentDocumentId = contentVersion?.ContentDocumentId;
@@ -577,7 +579,7 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
           tdc_tsw__Message_Time__c: timestamp,
           attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }
         };
-        if(message.contextMessageId)
+        if (message.contextMessageId)
           messageObj["tdc_tsw__ContextId__c"] = message.contextMessageId;
 
         if (ContentDocumentId) {
@@ -588,9 +590,9 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
         //await postRequest(SF_Headers, sf_URlForMessage, messageObj);
         await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
 
-        }
       }
-    }catch (error) {
+    }
+  } catch (error) {
     console.log(`Error in sending ${message?.type} messages to SF`, error);
     new errorRecord({
       error_type: 'General Error',
@@ -600,109 +602,109 @@ export const sendMobIncomingOutgoingMsgToSF = async (message) => {
   }
 }
 
-export const sendGroupMessageToSF = async(message) =>{
-    try {
-      if(!message || !message.sessionId || !message.messageId){
-        return;
-      }
-      const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
-
-      const availableNumbers = {
-        instanceUrl: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.instance_url,
-        accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
-      };
-      if (message?.sfGroupId &&
-        availableNumbers?.instanceUrl &&
-        availableNumbers?.accessToken
-      ) {
-        const instanceUrl = availableNumbers?.instanceUrl;
-        const accessToken = availableNumbers?.accessToken;
-        const SF_Headers = {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/JSON",
-        };  
-        let ContentDocumentId, name, nameID;
-        if (message?.mimetype && message?.image) {
-          const contentVersion = await getcontentVersionId(message, accessToken, instanceUrl);
-          console.log("contentVersion---", contentVersion);
-          ContentDocumentId = contentVersion?.ContentDocumentId;
-          name = contentVersion?.name;
-          nameID = contentVersion?.nameId;
-        }
-
-        let timestamp = getMessageTime(message?.messageTimestamp);
-        let messageObj = {
-          Name: message?.type === "Incoming" ? "Incoming" : "Outgoing",
-          OwnerId: availableNumbers?.userId || message?.sessionId?.slice(18),
-          tdc_tsw__MessageId__c: message?.messageId,
-          tdc_tsw__Channel__c: "WhatsApp: Personal",
-          tdc_tsw__Group_Chat__c: message?.sfGroupId,
-          tdc_tsw__Status__c: message?.deliveryStatus,
-          tdc_tsw__Message_Text_New__c: message?.message,
-          tdc_tsw__Source__c: "Mobile - WhatsApp Personal",
-          tdc_tsw__Sender_Number__c: message?.fromNumber,
-          tdc_tsw__Message_Time__c: timestamp,
-          tdc_tsw__ContextId__c: message?.contextMessageId,
-          tdc_tsw__Location__Latitude__s: message?.latitude,
-          tdc_tsw__Location__Longitude__s: message?.longitude,
-          attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }
-        };
-        if (ContentDocumentId) {
-          messageObj["tdc_tsw__File_Ids__c"] = `${ContentDocumentId}:${nameID} 1`;
-        }
-        console.log("syncing group messageObj to sf .................... message:", messageObj);
-        let sf_URlForMessage = `${instanceUrl}/services/data/v58.0/sobjects/tdc_tsw__Message__c`;
-        //await postRequest(SF_Headers, sf_URlForMessage, messageObj);
-        await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
-        
-      }
-    } catch (error) {
-      console.log(`Error in sending ${message?.type} froup messages to SF`, error);
-      new errorRecord({
-        error_type: "General Error",
-        error_code: "400",
-        error_message: `Error in sending ${message?.type} messages to SF`,
-      }).save();
+export const sendGroupMessageToSF = async (message) => {
+  try {
+    if (!message || !message.sessionId || !message.messageId) {
+      return;
     }
+    const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
+
+    const availableNumbers = {
+      instanceUrl: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.instance_url,
+      accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
+    };
+    if (message?.sfGroupId &&
+      availableNumbers?.instanceUrl &&
+      availableNumbers?.accessToken
+    ) {
+      const instanceUrl = availableNumbers?.instanceUrl;
+      const accessToken = availableNumbers?.accessToken;
+      const SF_Headers = {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/JSON",
+      };
+      let ContentDocumentId, name, nameID;
+      if (message?.mimetype && message?.image) {
+        const contentVersion = await getcontentVersionId(message, accessToken, instanceUrl);
+        console.log("contentVersion---", contentVersion);
+        ContentDocumentId = contentVersion?.ContentDocumentId;
+        name = contentVersion?.name;
+        nameID = contentVersion?.nameId;
+      }
+
+      let timestamp = getMessageTime(message?.messageTimestamp);
+      let messageObj = {
+        Name: message?.type === "Incoming" ? "Incoming" : "Outgoing",
+        OwnerId: availableNumbers?.userId || message?.sessionId?.slice(18),
+        tdc_tsw__MessageId__c: message?.messageId,
+        tdc_tsw__Channel__c: "WhatsApp: Personal",
+        tdc_tsw__Group_Chat__c: message?.sfGroupId,
+        tdc_tsw__Status__c: message?.deliveryStatus,
+        tdc_tsw__Message_Text_New__c: message?.message,
+        tdc_tsw__Source__c: "Mobile - WhatsApp Personal",
+        tdc_tsw__Sender_Number__c: message?.fromNumber,
+        tdc_tsw__Message_Time__c: timestamp,
+        tdc_tsw__ContextId__c: message?.contextMessageId,
+        tdc_tsw__Location__Latitude__s: message?.latitude,
+        tdc_tsw__Location__Longitude__s: message?.longitude,
+        attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }
+      };
+      if (ContentDocumentId) {
+        messageObj["tdc_tsw__File_Ids__c"] = `${ContentDocumentId}:${nameID} 1`;
+      }
+      console.log("syncing group messageObj to sf .................... message:", messageObj);
+      let sf_URlForMessage = `${instanceUrl}/services/data/v58.0/sobjects/tdc_tsw__Message__c`;
+      //await postRequest(SF_Headers, sf_URlForMessage, messageObj);
+      await callSFApi(message.sessionId, sf_URlForMessage, SF_Headers, messageObj, 'post');
+
+    }
+  } catch (error) {
+    console.log(`Error in sending ${message?.type} froup messages to SF`, error);
+    new errorRecord({
+      error_type: "General Error",
+      error_code: "400",
+      error_message: `Error in sending ${message?.type} messages to SF`,
+    }).save();
+  }
 }
 
-export const sendEditedIncomingToSF = async(message) =>{
+export const sendEditedIncomingToSF = async (message) => {
   try {
-    if(!message || !message.sessionId || !message.messageId){
+    if (!message || !message.sessionId || !message.messageId) {
       return;
     }
     let availableNumbers;
-    if(!message?.sfGroupId){
+    if (!message?.sfGroupId) {
       console.log("one to one edit message");
       let num = message?.type === 'Incoming' ? message.fromNumber : message.toNumber;
-    const isNumExist = await getNumAvailability(message.sessionId.slice(0, 18), num);
+      const isNumExist = await getNumAvailability(message.sessionId, num);
 
-    
-    if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
-      availableNumbers = await CheckAvailableNumbers(
-        message.sessionId,
-        message.messageTimestamp,
-        message.fromNumber,
-        message.toNumber,
-        message.type
-      );
-      if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
-        await numberUpdateWithTrue(message.sessionId, availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
-      }else if(availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length ==0)
-        await numberUpdateWithFalse(message.sessionId,[num]);
-    } else if (isNumExist) {
-      console.log("Number is already available in our db", num);
-      const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
-      availableNumbers = {
-        responseFromSFForNumCheck: { data: { AvailableNo: [num] } },
-        instanceUrl: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.instance_url,
-        accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
-        userId: responseFromGetConnentToSf?.userId
-      };
-    }
 
-    
-    }else{
+      if (isNumExist === "NOT_EXIST" && message.fromNumber && message.toNumber) {
+        availableNumbers = await CheckAvailableNumbers(
+          message.sessionId,
+          message.messageTimestamp,
+          message.fromNumber,
+          message.toNumber,
+          message.type
+        );
+        if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length) {
+          await numberUpdateWithTrue(message.sessionId, num, message.chatId);
+        } else if (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length == 0)
+          await numberUpdateWithFalse(message.sessionId, num, message.chatId);
+      } else if (isNumExist) {
+        console.log("Number is already available in our db", num);
+        const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
+        availableNumbers = {
+          responseFromSFForNumCheck: { data: { AvailableNo: [num] } },
+          instanceUrl: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.instance_url,
+          accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
+          userId: responseFromGetConnentToSf?.userId
+        };
+      }
+
+
+    } else {
       console.log("group edit message");
       const responseFromGetConnentToSf = await getConnectToSf(message.sessionId);
 
@@ -711,12 +713,12 @@ export const sendEditedIncomingToSF = async(message) =>{
         accessToken: responseFromGetConnentToSf?.responseFromSFForAccessToken?.data?.access_token,
       };
     }
-    
-    
+
+
     console.log("availableNumbers -------------", availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo);
 
     if (
-      (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length > 0 || message?.sfGroupId )&& message?.fromNumber &&
+      (availableNumbers?.responseFromSFForNumCheck?.data?.AvailableNo?.length > 0 || message?.sfGroupId) && message?.fromNumber &&
       availableNumbers?.instanceUrl &&
       availableNumbers?.accessToken
     ) {
@@ -738,15 +740,15 @@ export const sendEditedIncomingToSF = async(message) =>{
         tdc_tsw__ToNumber__c: message?.toNumber,
         tdc_tsw__Sender_Number__c: message?.fromNumber,
         tdc_tsw__Message_Time__c: timestamp,
-        tdc_tsw__Status__c: "Edited" ,
-        attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }  
+        tdc_tsw__Status__c: "Edited",
+        attributes: { "type": "tdc_tsw__Message__c", "referenceId": message?.messageId }
       };
       console.log("updateObj for edited message....................", updateObj);
-      await sendEditMSGTOSF(message.fromNumber, message.messageId, instanceUrl, SF_Headers, updateObj , message.sessionId);
+      await sendEditMSGTOSF(message.fromNumber, message.messageId, instanceUrl, SF_Headers, updateObj, message.sessionId);
     }
-    
+
   } catch (error) {
-    
+
   }
 }
 
@@ -759,7 +761,7 @@ export async function sendEditMSGTOSF(fromNumber, messageId, instanceUrl, SF_Hea
   const updateUrl = sf_LoginURL.updateObj(instanceUrl, recordId);
 
   const res = await callSFApi(sessionId, updateUrl, SF_Headers, updateObj, 'patch');
-   console.log("res status of edit msg patch request....", res?.status);
+  console.log("res status of edit msg patch request....", res?.status);
   return updateUrl;
 
 }
@@ -770,7 +772,7 @@ async function getcontentVersionId(messageOfMobile, accessToken, instanceUrl) {
     let ContentDocumentId, name, nameId;
     const fileExtension = mime.extension(messageOfMobile?.mimetype);
     console.log("fileExtension---", fileExtension);
-    name = `360SMS${Date.now()}.${fileExtension}`;
+    name = messageOfMobile?.filename || `360SMS${Date.now()}.${fileExtension}`;
     if (!fileExtension || fileExtension === 'undefined' || fileExtension === 'null') {
       return {};
     }
@@ -851,7 +853,7 @@ export async function sendDelivery(arrOfDelivery, needFromSf = false) {
           const status = objOfDelivery?.status;
           let deliveryObj = {
             type: "Delivery",
-            FromNumber: objOfDelivery?.senderNumber,
+            FromNumber: objOfDelivery?.fromNumber,
             WhatsAppSyncDate: objOfDelivery?.deliveryTimestamp,
             DeliveryStatus: [{ messageId: messageId, status: status }],
           };
@@ -875,7 +877,7 @@ export async function sendDelivery(arrOfDelivery, needFromSf = false) {
               deliveryResult?.response?.status === 401 &&
               Array.isArray(deliveryResult.response.data) &&
               deliveryResult.response.data[0]?.errorCode ===
-                "INVALID_SESSION_ID"
+              "INVALID_SESSION_ID"
             ) {
               sendDelivery(arrOfDelivery, true);
             }
@@ -945,26 +947,26 @@ function fileNameExtension(fileExtension) {
 
 
 
-export const updateSFUserLogTime=async(sessionId,data,needFromSf=false)=>{
-    let sfResponse=await getConnectToSf(sessionId,needFromSf);
-    console.log("WA LOG.............................",data);
-    let instanceUrl, accessToken;
-      if (sfResponse?.responseFromSFForAccessToken && sfResponse?.responseFromSFForAccessToken?.data && sfResponse?.responseFromSFForAccessToken.data.instance_url && sfResponse?.responseFromSFForAccessToken.data.access_token) {
+export const updateSFUserLogTime = async (sessionId, data, needFromSf = false) => {
+  let sfResponse = await getConnectToSf(sessionId, needFromSf);
+  console.log("WA LOG.............................", data);
+  let instanceUrl, accessToken;
+  if (sfResponse?.responseFromSFForAccessToken && sfResponse?.responseFromSFForAccessToken?.data && sfResponse?.responseFromSFForAccessToken.data.instance_url && sfResponse?.responseFromSFForAccessToken.data.access_token) {
 
-        instanceUrl = sfResponse.responseFromSFForAccessToken.data.instance_url;
-        accessToken = sfResponse.responseFromSFForAccessToken.data.access_token;
-        const url=`${instanceUrl}/services/apexrest/x360I/WebWAUserLog`;
-        const headers={
-            Authorization:`Bearer ${accessToken}`,
-            'Content-Type': 'application/JSON'
-        }
-        //console.log("log user.....................................",url,headers,data);
-        let res=await postRequest(headers,url,data);
-        if(res && res?.response && res?.response?.status === 401 && Array.isArray(res.response.data) && res.response.data[0]?.errorCode === 'INVALID_SESSION_ID'){
-          await  updateSFUserLogTime(sessionId,data,true);
-        }
-      }
-    
+    instanceUrl = sfResponse.responseFromSFForAccessToken.data.instance_url;
+    accessToken = sfResponse.responseFromSFForAccessToken.data.access_token;
+    const url = `${instanceUrl}/services/apexrest/x360I/WebWAUserLog`;
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/JSON'
+    }
+    //console.log("log user.....................................",url,headers,data);
+    let res = await postRequest(headers, url, data);
+    if (res && res?.response && res?.response?.status === 401 && Array.isArray(res.response.data) && res.response.data[0]?.errorCode === 'INVALID_SESSION_ID') {
+      await updateSFUserLogTime(sessionId, data, true);
+    }
+  }
+
 
 
 
@@ -981,7 +983,7 @@ export const sendGroupParticipantsUpdateToSF = async (
 ) => {
   try {
     if (sessionId && groupId && action && participantNumber) {
-      const getAccessAndInstance = await getConnectToSf(sessionId , needFromSf);
+      const getAccessAndInstance = await getConnectToSf(sessionId, needFromSf);
 
       const userSessionData = await userModel.findOne({
         sessionid: sessionId,
@@ -1026,7 +1028,7 @@ export const sendGroupParticipantsUpdateToSF = async (
           responseFromGroupParticipantUpdate?.response?.status === 401 &&
           Array.isArray(responseFromGroupParticipantUpdate.response.data) &&
           responseFromGroupParticipantUpdate.response.data[0]?.errorCode ===
-            "INVALID_SESSION_ID"
+          "INVALID_SESSION_ID"
         ) {
           responseFromGroupParticipantUpdate = await sendGroupParticipantsUpdateToSF(
             groupId,

@@ -4,7 +4,7 @@ import { unipileHeaders } from './constants';
 
 export async function makeRequest(req) {
     try {
-        const { method, url, headers, data, responseType} = req;
+        const { method, url, headers, data, responseType , httpsAgent} = req;
         const config = {
             method: method || 'get',  
             url: url,
@@ -13,11 +13,15 @@ export async function makeRequest(req) {
         if(responseType){
             config.responseType = responseType
         }
+        if(httpsAgent){
+            config.httpsAgent = httpsAgent
+        }
         if(method=='post' || method=='patch') config['data']=data || {};
         let response = await axios(config);
+        //console.log(`Response from ${url}:`, response);
         return response;
     } catch (error) {
-        console.error('Error making request:', error.message);
+        console.error('Error making request:', error);
         if (error.response) {
             console.error('Response error:', error.response.data); // Log server response
         } else if (error.request) {
@@ -32,20 +36,19 @@ export async function makeRequest(req) {
 
 
 
-export const getRequest = async function (headers, url) {
-
-    const resp = await axios({
-        headers,
-        method: "get",
-        url: url
-    })
-        .then(function (response) {
-            return response;
-        })
-        .catch(function (error) {
-            return error;
-        });
+export const getRequest = async function (headers, url,chat_id) {
+try{
+    console.log(`Making GET request to ${url} with headers:`, headers);
+    const resp = await axios.get(url, {
+        headers
+     });
+    console.log(`GET request to ${url} successful:`, resp.data);
     return resp;
+
+}catch(error){
+    console.error('Error in getRequest:', error);
+    return error;
+}
 };
 
 export const postRequest = async function (headers, url, data = {}) {

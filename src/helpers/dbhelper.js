@@ -1,5 +1,5 @@
 
-import checkNumbersModel from "../models/checkNumbers.model";
+import { checkNumbersModel } from "../models/index.model.js";
 
 
 
@@ -10,10 +10,11 @@ export const bulkUpdateNumbersWithFalse = async (sessionId, NumList) => {
       const Numbers = [...NumList];
 
       console.log(
-        "bulkUpdateNumbersWithFalse called with orgId:",
+        "bulkUpdateNumbersWithFalse called with sessionId:",
         sessionId,
         "and Numbers:",
-        Array.isArray(Numbers)
+        Array.isArray(Numbers),
+        Numbers
       );
 
       const bulkOps = await Promise.all(
@@ -34,12 +35,12 @@ export const bulkUpdateNumbersWithFalse = async (sessionId, NumList) => {
     }
 
   } catch (error) {
-    console.error(`Error updating numbers with false for orgId: ${sessionId}`, error.message);
+    console.error(`Error updating numbers with false for sessionId: ${sessionId}`, error.message);
   }
 };
 
 
-export const bulkUpdateNumbersWithTrue = async (sessionId, NumList = [], chatIdList) => {
+export const bulkUpdateNumbersWithTrue = async (sessionId, NumList = []) => {
   try {
     if (NumList.length > 0) {
       const Numbers = [...NumList];
@@ -48,7 +49,8 @@ export const bulkUpdateNumbersWithTrue = async (sessionId, NumList = [], chatIdL
         "bulkUpdateNumbersWithTrue called with sessionId:",
         sessionId,
         "and Numbers:",
-        Array.isArray(Numbers)
+        Array.isArray(Numbers),
+        Numbers
       );
 
       const bulkOps = await Promise.all(
@@ -107,31 +109,27 @@ export const numberUpdateWithFalse = async (sessionId, number, chatId) => {
 
 
 
-export const bulkUpdateGroup = async (sessionId, groupId, sfGroupId, groupName) => {
+export const updateGroup = async (sessionId, groupId, sfGroupId, groupName, chatId) => {
   try {
-    const Numbers = [groupId];
-    console.log("bulkUpdateGroup called with sessionId:", sessionId, "and Numbers:", Array.isArray(Numbers));
+
+    console.log("UpdateGroup called with sessionId:", sessionId, "and group:", groupId);
 
     const setObj = {
       isAvailable: sfGroupId ? true : false,
-      sf_groupId: sfGroupId ? sfGroupId : null
+      sf_groupId: sfGroupId ? sfGroupId : null,
+      chat_id: chatId
     }
 
     if (groupName !== undefined || groupName !== "") {
       setObj.groupName = groupName;
     }
 
-    const bulkOps = Numbers.map(number => ({
-      updateOne: {
-        filter: {
-          sessionId: sessionId,
-          number: number
-        },
-        update: { $set: setObj },
-        upsert: true
-      }
-    }));
-    await checkNumbersModel.bulkWrite(bulkOps);
+    const rec = await checkNumbersModel.findOneAndUpdate(
+      { sessionId, number: groupId },
+      { $set: setObj },
+      { upsert: true, new: true }
+    );
+    console.log("UpdateGroup updated record:", rec);
   } catch (error) {
     console.error(`Error updating group  for sessionId: ${sessionId}`, error.message);
   }

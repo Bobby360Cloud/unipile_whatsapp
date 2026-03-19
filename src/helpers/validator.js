@@ -1,18 +1,60 @@
-import userModel  from "../models/user.model.js";
+import { accountModel, userModel, checkNumbersModel } from "../models/index.model.js";
 import crypto from "crypto";
+import { nodeRefreshTokenUpdateURl } from  "./constants.js" ;
+import { postRequest } from "./request.js";
+import { getAccountStatus } from "./apiHelper.js";
 
-export const getSessionFromValidOrgUser = async (orgId, userId ) => {
+export const getSessionFromValidOrgUser = async (orgId, userId, isQr = false) => {
   let validObj = {};
   validObj['isValidOrgUser'] = ((orgId && orgId.startsWith('00D') && orgId.length == 18) && (userId && userId.startsWith('005') && userId.length == 18));
   if (validObj.isValidOrgUser) {
     validObj['sessionId'] = String(orgId) + String(userId);
 
-    const userData = await userModel.findOne({sessionId : validObj.sessionId});
+    const userData = await accountModel.findOne(
+      { sessionId: validObj.sessionId }
+    );
     validObj['userExist'] = userData;
-    validObj['loggedIn'] =userData?.number ? true : false   
-      console.log(validObj); 
-    return validObj;
+    validObj['loggedIn'] = userData?.number ? true : false
+    if (isQr && userData?.account_id) {
+      const response = await getAccountStatus(userData.account_id);
+      if (response?.name) {
+        validObj['loggedIn'] = true;
+        await accountModel.findOneAndUpdate(
+          { sessionId: validObj.sessionId },
+          {
+            $set: {
+              loggedIn: true,
+              number: response.name,
+              account_id: userData.account_id
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } else {
+        validObj['loggedIn'] = false;
+        const data = await accountModel.findOneAndUpdate(
+          { sessionId: validObj.sessionId },
+          {
+            $set: {
+              loggedIn: false,
+              number: null,
+              account_id: null
+            }
+          },
+          { upsert: true, new: true }
+        );
+        validObj['userExist'] = data;
+        await checkNumbersModel.deleteMany({
+          $or: [
+            { sessionId: validObj.sessionId },
+            { account_id: userData.account_id }
+          ]
+        });
+
+      }
     }
+    return validObj;
+  }
 }
 
 
@@ -70,4 +112,61 @@ export function getOrgString (orgid){
         
     }
 }
+
+
+export const authValidator = async (req, res, next) => {
+    try {
+      console.log("inside request validator v1===============");
+      const authHeader = req?.headers?.authorization;
+      const orgId = req?.headers?.orgid;
+  
+      if (!authHeader || !orgId) {
+        return res.status(401).json({
+          success: false,
+          message: "Authorization failed !!"
+        });
+      }
+  
+      // Must be: Bearer <token>
+      const parts = authHeader.split(" ");
+  
+      if (parts.length !== 2 || parts[0] !== "Bearer" || !parts[1]) {
+        return res.status(401).json({
+          success: false,
+          message: "Authorization failed !!"
+        });
+      }
+  
+      const token = parts[1];
+      const authReqData = {
+        "orgid": orgId,
+        "productName":"360 SMS",
+      }
+
+      const headers = {
+        "Authorization" : `Bearer ${token}`
+      }
+
+      const serverUrl = nodeRefreshTokenUpdateURl(process.env.NODE_AUTHAPP_URL);
+
+      const responseFromNodeServer = await postRequest(headers , serverUrl , authReqData);
+      console.log("responseFromNodeServer", responseFromNodeServer?.data);
+      if(responseFromNodeServer?.status === 200){
+          return next();
+      }
+      return res.status(401).json({
+        success: false,
+        message: "Authorization failed !!"
+      });
+
+  
+     
+    } catch (error) {
+      console.error("Auth middleware error:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Authentication middleware failed"
+      });
+    }
+};
 

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const checkNumberSchema = new mongoose.Schema({
-  sessionId : {
+  sessionId: {
     type: String,
     required: true,
     index: true
@@ -10,6 +10,9 @@ const checkNumberSchema = new mongoose.Schema({
     type: String,
     required: true,
     index: true
+  },
+  groupName: {
+    type: String,
   },
   isAvailable: {
     type: Boolean,
@@ -23,11 +26,8 @@ const checkNumberSchema = new mongoose.Schema({
     type: String,
     required: true,
   }
-}, { 
-  timestamps: true,  
-  unique: [
-    { orgId: 1, number: 1 }
-  ] 
-});
+}, {
+        timestamps: { createdAt: 'createdat', updatedAt: 'updatedat' },
+    });
 
 export default mongoose.model('CheckNumber', checkNumberSchema);

@@ -1,11 +1,17 @@
 import config from "../configs/config.js";
-const {PHP_SERVER_URL , UNIPILE_API_KEY , UNIPILE_DSN} = config;
+const { PHP_SERVER_URL, UNIPILE_API_KEY, UNIPILE_DSN } = config;
 export default {
   baseAPI: "",
   routes_Url: {
-    getAccountDetail : (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
-    getQr : `${UNIPILE_DSN}/api/v1/accounts`,
-    getAttachmentUrl : (messageId , attachmentId) =>`${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
+    getAccountDetail: (id) => `${UNIPILE_DSN}/api/v1/accounts/${id}`,
+    setupWebhook: (account_id) => `${UNIPILE_DSN}/api/v1/accounts/${account_id}/webhooks`,
+    getQr: `${UNIPILE_DSN}/api/v1/accounts`,
+    getAttachmentUrl: (messageId, attachmentId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}/attachments/${attachmentId}`,
+    getMessageUrl: (messageId) => `${UNIPILE_DSN}/api/v1/messages/${messageId}`,
+    sendMsgUrl: (chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}/messages`,
+    startNewChatUrl: `${UNIPILE_DSN}/api/v1/chats`,
+    getChatInfo: (chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}`,
+    getChatAttendies: (chat_id) => `${UNIPILE_DSN}/api/v1/chats/${chat_id}/attendees`,
     getPHPSERVER: (orgId) =>
       `${PHP_SERVER_URL}/smsapp/numberDetails.php?org_id=${orgId}`,
     getnumberSync: (INSTANCE_URL) =>
@@ -30,13 +36,13 @@ export default {
 };
 
 export const unipileHeaders = {
-  "content-type": "application/json" ,
+  "content-type": "application/json",
   "X-API-KEY": UNIPILE_API_KEY
 }
 
 
 
-export const sendMsgObj={
+export const sendMsgObj = {
   "Name": "",
   "tdc_tsw__Status__c": "",
   "tdc_tsw__Channel__c": "WhatsApp: Personal",
@@ -49,11 +55,11 @@ export const sendMsgObj={
 }
 
 export const querySF = {
-  getRecordIdOfSMS :(fromNumber,messageId) =>
-      `Select+Id+from+tdc_tsw__Message__c+where+tdc_tsw__Sender_Number__c+=+'${fromNumber}'+and+tdc_tsw__MessageId__c+=+'${messageId}'`,
-  getSyncHistoryVal :(userId)=>
+  getRecordIdOfSMS: (fromNumber, messageId) =>
+    `Select+Id+from+tdc_tsw__Message__c+where+tdc_tsw__Sender_Number__c+=+'${fromNumber}'+and+tdc_tsw__MessageId__c+=+'${messageId}'`,
+  getSyncHistoryVal: (userId) =>
     `SELECT+Id,+Name,+tdc_tsw__Custom_Value__c+FROM+tdc_tsw__General_Setup__c+WHERE+Name+=+'Sync+Recent+History'+AND+RecordType.Name+=+'Custom+Setup'+AND+tdc_tsw__User_ID__c+=+'${userId}'+ORDER+BY+CreatedDate+DESC+LIMIT+1`
-  
+
 
 }
 
@@ -90,7 +96,7 @@ export class createMessageObj {
     this.toNumber = "";
     this.fromNumber = "";
     this.type = "";
-    this.contextMessageId="";
+    this.contextMessageId = "";
   }
   setMessgeInfo(fromMe, fromNumber, toNumber, contextMessageId, accountId, chatId) {
     this.toNumber = toNumber;
@@ -106,28 +112,32 @@ export class createMessageObj {
     this.messageTimestamp = messageTimestamp;
     if (isEdit) this.isEdit = isEdit;
   }
-  setMediaMessage(image, mimetype) {
+  setMediaMessage(image, mimetype, filename) {
     this.image = image;
     this.mimetype = mimetype;
+    this.filename = filename;
   }
 
-  setLocationMessage(degreesLatitude , degreesLongitude){
-      this.latitude = degreesLatitude;
-      this.longitude = degreesLongitude;
+  setLocationMessage(degreesLatitude, degreesLongitude) {
+    this.latitude = degreesLatitude;
+    this.longitude = degreesLongitude;
   }
   setDeliveryStatus(status) {
     this.deliveryStatus = status;
   }
-  setGroupMessageInfo(fromMe,fromNumber,participant,groupId,contextMessageId, sfGroupId, groupName){
-      this.fromNumber = fromNumber;
-      this.participant = participant;
-      this.type = fromMe ? "Outgoing" : "Incoming";
-      this.groupId = groupId;
-      this.contextMessageId = contextMessageId;
-      this.sfGroupId =sfGroupId;
-      this.groupName = groupName;      
+  setGroupMessageInfo(fromMe, fromNumber, participant, groupId, contextMessageId, sfGroupId, groupName, chatId) {
+    this.fromNumber = fromNumber;
+    this.participant = participant;
+    this.type = fromMe ? "Outgoing" : "Incoming";
+    this.groupId = groupId;
+    this.contextMessageId = contextMessageId;
+    this.sfGroupId = sfGroupId;
+    this.groupName = groupName;
+    this.chatId = chatId;
   }
-  setSFGroupId(sfGroupId){
-      this.sfGroupId = sfGroupId;
+  setSFGroupId(sfGroupId) {
+    this.sfGroupId = sfGroupId;
   }
 }
+
+export const sessionIncomingOutgoing = new Map();
